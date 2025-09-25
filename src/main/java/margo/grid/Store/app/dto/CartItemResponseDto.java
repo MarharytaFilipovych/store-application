@@ -1,11 +1,12 @@
 package margo.grid.Store.app.dto;
 
+import lombok.Builder;
 import lombok.Data;
-import org.hibernate.validator.constraints.UUID;
-
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
+@Builder
 public class CartItemResponseDto {
     private UUID itemId;
     private String title;
@@ -13,8 +14,4 @@ public class CartItemResponseDto {
     private BigDecimal price;
     private BigDecimal subtotal;
     private Integer ordinal;
-
-    public BigDecimal getSubtotal() {
-        return price.multiply(BigDecimal.valueOf(quantity));
-    }
 }

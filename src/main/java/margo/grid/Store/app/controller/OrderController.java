@@ -1,5 +1,6 @@
 package margo.grid.Store.app.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import margo.grid.Store.app.dto.OrderResponseDto;
 import margo.grid.Store.app.dto.PageResponseDto;
@@ -29,8 +30,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDto> getOrder(@PathVariable UUID id) {
-        OrderResponseDto orderResponse = orderService.getOrderById(id);
-        return ResponseEntity.ok(orderResponse);
+        return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PatchMapping("/{id}")
@@ -40,7 +40,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponseDto<OrderResponseDto>> getAllUserOrders(PaginationRequestDto pagination){
+    public ResponseEntity<PageResponseDto<OrderResponseDto>> getAllUserOrders(@Valid PaginationRequestDto pagination){
         Page<OrderResponseDto> orders = orderService.getAllUserOrders(pagination.getLimit(), pagination.getOffset());
         return ResponseEntity.ok().body(PageResponseDto.from(orders));
     }
