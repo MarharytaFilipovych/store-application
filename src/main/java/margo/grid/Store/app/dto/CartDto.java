@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class CartResponseDto {
+public class CartDto {
     private List<CartItemResponseDto> items;
 
     @JsonProperty("total_price")

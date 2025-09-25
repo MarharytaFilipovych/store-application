@@ -7,9 +7,11 @@ import margo.grid.Store.app.dto.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import javax.naming.AuthenticationException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -40,7 +42,7 @@ public class GlobalExceptionController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception e){
+    public ResponseEntity<ErrorResponseDto> handleGlobalException(){
         return ResponseEntity.internalServerError().body(new ErrorResponseDto("OHHHHHH NOOOOO"));
     }
 
@@ -49,8 +51,18 @@ public class GlobalExceptionController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto("Invalid JSON format in request body"));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public ResponseEntity<ErrorResponseDto> handleErrorResponses(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(new ErrorResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDto> handleAuthenticationException(){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponseDto("Invalid credentials!"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponseDto("Access denied!"));
     }
 }

@@ -2,7 +2,7 @@ package margo.grid.Store.app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.dto.CartResponseDto;
+import margo.grid.Store.app.dto.CartDto;
 import margo.grid.Store.app.dto.ItemToCartRequestDto;
 import margo.grid.Store.app.service.CartService;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CartResponseDto> getAllItemsInCart(){
-        return ResponseEntity.ok().body(cartService.getAllItems());
+    public ResponseEntity<CartDto> getAllItemsInCart(){
+        return ResponseEntity.ok().body(cartService.getCart());
     }
 }

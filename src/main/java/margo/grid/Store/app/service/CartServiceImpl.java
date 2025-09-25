@@ -2,17 +2,20 @@ package margo.grid.Store.app.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import margo.grid.Store.app.dto.CartItemResponseDto;
-import margo.grid.Store.app.dto.CartResponseDto;
+import margo.grid.Store.app.dto.CartDto;
 import margo.grid.Store.app.dto.ItemToCartRequestDto;
 import margo.grid.Store.app.entity.Item;
 import margo.grid.Store.app.repository.ItemRepository;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.context.WebApplicationContext;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CartServiceImpl implements CartService {
     private final Map<UUID, Integer> cartItems;
     private final ItemRepository itemRepository;
@@ -44,7 +47,7 @@ public class CartServiceImpl implements CartService {
                 foundItem -> {
                     int currentQuantity = cartItems.getOrDefault(dto.getItemId(), 0);
                     if (foundItem.getAvailableQuantity() < currentQuantity + dto.getQuantity()) {
-                        throw new IllegalArgumentException("The requested quantity exceeded available quantity!");
+                        throw new IllegalStateException("The requested quantity exceeded available quantity!");
                     }
                     cartItems.merge(dto.getItemId(), dto.getQuantity(), Integer::sum);
                 },
@@ -60,13 +63,17 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponseDto getAllItems() {
+    public CartDto getCart() {
         List<CartItemResponseDto> items = getCartItemDtos();
-        return CartResponseDto.builder()
+        return CartDto.builder()
                 .items(items)
                 .totalPrice(getTotalPrice(items))
                 .totalQuantity(getTotalQuantity(items))
                 .build();
+    }
+
+    public List<Item> getAllItemsInCart(){
+        return itemRepository.findAllById(cartItems.keySet());
     }
 
     private BigDecimal getSubtotal(BigDecimal price, Integer quantity) {
