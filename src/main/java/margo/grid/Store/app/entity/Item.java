@@ -17,8 +17,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-@ToString
+@EqualsAndHashCode(exclude = {"orders"})
+@ToString(exclude = {"orders"})
 @Builder
 public class Item {
     @Id
@@ -42,7 +42,7 @@ public class Item {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "items")
     @Builder.Default
     Set<Order> orders = new HashSet<>();
 }

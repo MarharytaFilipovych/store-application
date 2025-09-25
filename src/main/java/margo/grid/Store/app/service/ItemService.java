@@ -1,4 +1,4 @@
 package margo.grid.Store.app.service;
 
-public interface UserService {
+public interface ItemService {
 }

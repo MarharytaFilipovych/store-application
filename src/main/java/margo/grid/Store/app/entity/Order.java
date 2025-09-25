@@ -16,9 +16,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"items", "user"})
 @Builder
-@ToString
+@ToString(exclude = {"items", "user"})
 public class Order {
 
     @Id
@@ -44,13 +44,22 @@ public class Order {
                 inverseJoinColumns = @JoinColumn(name = "item_id"))
     private Set<Item> items = new HashSet<>();
 
-    public void addItem(Item item){
-        items.add(item);
-        item.getOrders().add(this);
+    public void addItem(Item item) {
+        if (item != null) {
+            items.add(item);
+            item.getOrders().add(this);
+        }
     }
 
-    public void removeItem(Item item){
-        items.remove(item);
-        item.getOrders().remove(this);
+    public void removeItem(Item item) {
+        if (item != null && items.contains(item)) {
+            items.remove(item);
+            item.getOrders().remove(this);
+        }
     }
+
+    @ManyToOne(targetEntity = User.class, optional = false)
+    private User user;
 }
+
+

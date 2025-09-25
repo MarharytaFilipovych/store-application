@@ -7,6 +7,8 @@ import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -15,8 +17,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-@ToString
+@EqualsAndHashCode(exclude = {"orders"})
+@ToString(exclude = {"orders"})
 @Builder
 public class User {
 
@@ -25,11 +27,8 @@ public class User {
     private UUID id;
 
     @Email
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
-    private String password;
 
     @Column(nullable = false, name = "password_hash")
     private String passwordHash;
@@ -41,4 +40,15 @@ public class User {
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    Set<Order> orders = new HashSet<>();
+
+    public void addOrder(Order order) {
+        if (order != null) {
+            orders.add(order);
+            order.setUser(this);
+        }
+    }
 }

@@ -7,12 +7,12 @@ import lombok.Data;
 import org.hibernate.validator.constraints.UUID;
 
 @Data
-public class CartItemRequestDto {
+public class AddItemToCartRequestDto {
     @NotNull
-    private UUID id;
+    private UUID itemId;
 
     @NotNull
-    @Min(0)
+    @Min(1)
     @Max(1000)
     private Integer quantity;
 }

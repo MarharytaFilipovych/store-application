@@ -2,11 +2,13 @@ package margo.grid.Store.app.controller;
 
 import lombok.RequiredArgsConstructor;
 import margo.grid.Store.app.dto.OrderResponseDto;
+import margo.grid.Store.app.dto.PageResponseDto;
+import margo.grid.Store.app.dto.PaginationRequestDto;
 import margo.grid.Store.app.service.OrderService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.UUID;
 
@@ -35,5 +37,11 @@ public class OrderController {
     public ResponseEntity<Void> cancelOrder(@PathVariable UUID id){
         orderService.cancelOrder(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<PageResponseDto<OrderResponseDto>> getAllUserOrders(PaginationRequestDto pagination){
+        Page<OrderResponseDto> orders = orderService.getAllUserOrders(pagination.getLimit(), pagination.getOffset());
+        return ResponseEntity.ok().body(PageResponseDto.from(orders));
     }
 }

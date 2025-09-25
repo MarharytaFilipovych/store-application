@@ -9,6 +9,6 @@ import java.util.UUID;
 public class ItemResponseDto {
     private UUID id;
     private String title;
-    private Integer available_quantity;
+    private Integer availableQuantity;
     private BigDecimal price;
 }
