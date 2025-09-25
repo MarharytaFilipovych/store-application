@@ -3,6 +3,7 @@ package margo.grid.Store.app.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import margo.grid.Store.app.annotation.ValidPassword;
 
 @Data
 public class AuthDto {
@@ -10,6 +11,6 @@ public class AuthDto {
     @Email
     private String email;
 
-    @NotBlank
+    @ValidPassword
     private String password;
 }
