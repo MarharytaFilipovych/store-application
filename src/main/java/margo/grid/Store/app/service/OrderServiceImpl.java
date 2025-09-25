@@ -2,15 +2,12 @@ package margo.grid.Store.app.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.dto.ItemResponseDto;
 import margo.grid.Store.app.dto.OrderResponseDto;
 import margo.grid.Store.app.entity.OrderStatus;
 import margo.grid.Store.app.mapper.OrderMapper;
 import margo.grid.Store.app.repository.OrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-
 import java.util.UUID;
 
 @Service

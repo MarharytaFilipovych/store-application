@@ -4,11 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import margo.grid.Store.app.dto.CartResponseDto;
 import margo.grid.Store.app.dto.ItemToCartRequestDto;
-import margo.grid.Store.app.dto.CartItemResponseDto;
 import margo.grid.Store.app.service.CartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 import java.util.UUID;
 
 @RestController

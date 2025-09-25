@@ -6,10 +6,8 @@ import margo.grid.Store.app.dto.ItemResponseDto;
 import margo.grid.Store.app.dto.PageResponseDto;
 import margo.grid.Store.app.dto.PaginationRequestDto;
 import margo.grid.Store.app.service.ItemService;
-import margo.grid.Store.app.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
