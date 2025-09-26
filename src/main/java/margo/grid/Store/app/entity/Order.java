@@ -27,7 +27,7 @@ public class Order {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private margo.grid.Store.app.entity.OrderStatus status;
+    private OrderStatus status;
 
     @LastModifiedDate
     @Column(name = "updated_at", insertable = false)

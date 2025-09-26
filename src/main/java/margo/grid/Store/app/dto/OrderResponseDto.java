@@ -1,7 +1,7 @@
 package margo.grid.store.app.dto;
 
 import lombok.Data;
-import margo.grid.Store.app.entity.OrderStatus;
+import margo.grid.store.app.entity.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;

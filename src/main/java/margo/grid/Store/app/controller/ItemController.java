@@ -2,7 +2,7 @@ package margo.grid.store.app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.service.ItemService;
+import margo.grid.store.app.service.ItemService;
 import margo.grid.store.app.dto.ItemResponseDto;
 import margo.grid.store.app.dto.PageResponseDto;
 import margo.grid.store.app.dto.PaginationRequestDto;

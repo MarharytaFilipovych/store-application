@@ -1,7 +1,7 @@
 package margo.grid.store.app.service;
 
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.utils.MyUserDetails;
+import margo.grid.store.app.utils.MyUserDetails;
 import margo.grid.store.app.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
