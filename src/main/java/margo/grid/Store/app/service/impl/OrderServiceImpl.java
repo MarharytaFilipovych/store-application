@@ -15,6 +15,7 @@ import margo.grid.store.app.utils.MyUserDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.util.HashSet;
@@ -69,9 +70,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<OrderResponseDto> getAllUserOrders(MyUserDetails userDetails, Integer limit, Integer offset) {
+    public Page<OrderResponseDto> getAllUserOrders(MyUserDetails userDetails, Pageable pageable) {
         User user = userRepository.findById(userDetails.getId()).orElseThrow();
         return new PageImpl<>(orderRepository.findOrdersByUser_IdAndStatus_(user.getId(), OrderStatus.CONFIRMED,
-                PageRequest.of(limit, offset)).map(orderMapper::toDto).getContent());
+                pageable).map(orderMapper::toDto).getContent());
     }
 }

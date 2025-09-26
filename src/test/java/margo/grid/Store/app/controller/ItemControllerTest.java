@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -48,10 +50,7 @@ class ItemControllerTest {
     ArgumentCaptor<UUID> uuidArgumentCaptor;
 
     @Captor
-    ArgumentCaptor<Integer> limitCaptor;
-
-    @Captor
-    ArgumentCaptor<Integer> offsetCaptor;
+    ArgumentCaptor<Pageable> pageableArgumentCaptor;
 
     private ItemResponseDto itemResponseDto;
     private List<ItemResponseDto> itemResponseDtos;
@@ -65,13 +64,13 @@ class ItemControllerTest {
     @Test
     void getAllStoreItems_returnsAllStoreItems() throws Exception {
         // Arrange
-        when(itemService.getItems(anyInt(), anyInt()))
+        when(itemService.getItems(PageRequest.of(1, 10)))
                 .thenReturn(new PageImpl<>(itemResponseDtos));
 
         // Act & Assert
         mockMvc.perform(get("/items")
-                        .param("limit", "10")
-                        .param("offset", "1")
+                        .param("size", "10")
+                        .param("page", "1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -82,9 +81,8 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.content[0].title").value(itemResponseDtos.getFirst().getTitle()))
                 .andExpect(jsonPath("$.content[0].price").value(itemResponseDtos.getFirst().getPrice()));
 
-        verify(itemService).getItems(limitCaptor.capture(), offsetCaptor.capture());
-        assertEquals(10, limitCaptor.getValue());
-        assertEquals(1, offsetCaptor.getValue());
+        verify(itemService).getItems(pageableArgumentCaptor.capture());
+        assertEquals(PageRequest.of(1, 10), pageableArgumentCaptor.getValue());
     }
 
     @Test
@@ -110,7 +108,7 @@ class ItemControllerTest {
     @Test
     void getAllStoreItems_withDefaultPagination_returnsItems() throws Exception {
         // Arrange
-        when(itemService.getItems(20, 1))
+        when(itemService.getItems(PageRequest.of(0, 20)))
                 .thenReturn(new PageImpl<>(itemResponseDtos));
 
         // Act & Assert
@@ -126,8 +124,8 @@ class ItemControllerTest {
     void getAllStoreItems_withInvalidPagination_returnsBadRequest() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/items")
-                        .param("limit", "0")
-                        .param("offset", "0")
+                        .param("page", "-1")
+                        .param("size", "-3")
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());

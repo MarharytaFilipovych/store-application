@@ -8,6 +8,7 @@ import margo.grid.store.app.repository.ItemRepository;
 import margo.grid.store.app.service.ItemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
 
@@ -18,9 +19,8 @@ public class ItemServiceImpl implements ItemService {
     private final ItemMapper itemMapper;
 
     @Override
-    public Page<ItemResponseDto> getItems(Integer limit, Integer offset) {
-        PageRequest pageRequest = PageRequest.of(limit, offset);
-        return itemRepository.findAll(pageRequest).map(itemMapper::toItemResponseDto);
+    public Page<ItemResponseDto> getItems(Pageable pageable) {
+        return itemRepository.findAll(pageable).map(itemMapper::toItemResponseDto);
     }
 
     @Override

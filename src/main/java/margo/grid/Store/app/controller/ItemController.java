@@ -5,8 +5,9 @@ import lombok.RequiredArgsConstructor;
 import margo.grid.store.app.service.ItemService;
 import margo.grid.store.app.dto.ItemResponseDto;
 import margo.grid.store.app.dto.PageResponseDto;
-import margo.grid.store.app.dto.PaginationRequestDto;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
@@ -19,8 +20,8 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public ResponseEntity<PageResponseDto<ItemResponseDto>> getALlStoreItems(@Valid @ModelAttribute PaginationRequestDto pagination){
-        Page<ItemResponseDto> items = itemService.getItems(pagination.getLimit(), pagination.getOffset());
+    public ResponseEntity<PageResponseDto<ItemResponseDto>> getALlStoreItems(@Valid @PageableDefault(sort = "title") Pageable pageable){
+        Page<ItemResponseDto> items = itemService.getItems(pageable);
         return ResponseEntity.ok().body(PageResponseDto.from(items));
     }
 

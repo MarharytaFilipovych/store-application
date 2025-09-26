@@ -3,6 +3,8 @@ package margo.grid.store.app.service;
 import margo.grid.store.app.dto.OrderResponseDto;
 import margo.grid.store.app.utils.MyUserDetails;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.UUID;
 
 public interface OrderService {
@@ -13,5 +15,5 @@ public interface OrderService {
 
     void cancelOrder(UUID id, MyUserDetails user);
 
-    Page<OrderResponseDto> getAllUserOrders(MyUserDetails user, Integer limit, Integer offset);
+    Page<OrderResponseDto> getAllUserOrders(MyUserDetails user, Pageable pageable);
 }

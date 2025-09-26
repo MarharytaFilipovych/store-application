@@ -26,14 +26,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers("/store/auth/login", "/store/auth/register",
-                                        "/store/items/**", "/items/**", "/store/auth/forgot-password", // <- ADD THIS BACK
-                                        "/store/auth/reset-password").permitAll()
+                                .requestMatchers("/auth/login", "/auth/register",
+                                        "/items/**", "/auth/forgot-password",
+                                        "/auth/reset-password").permitAll()
                                 .anyRequest().authenticated())
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(httpSecurityLogoutConfigurer ->
-                        httpSecurityLogoutConfigurer.logoutUrl("/store/auth/logout")
+                        httpSecurityLogoutConfigurer.logoutUrl("/auth/logout")
                                 .invalidateHttpSession(true)
                                 .deleteCookies("JSESSIONID")
                                 .clearAuthentication(true)
