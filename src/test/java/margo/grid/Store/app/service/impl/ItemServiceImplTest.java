@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static margo.grid.store.app.testdataa.ItemTestDataProvider.getItemResponseDtos;
-import static margo.grid.store.app.testdataa.ItemTestDataProvider.getTestItems;
+import static margo.grid.store.app.testdata.ItemTestDataProvider.getItemResponseDtos;
+import static margo.grid.store.app.testdata.ItemTestDataProvider.getTestItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

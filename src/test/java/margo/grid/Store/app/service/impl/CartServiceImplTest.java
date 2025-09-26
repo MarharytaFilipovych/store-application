@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.*;
-import static margo.grid.store.app.testdataa.ItemTestDataProvider.getTestItems;
+import static margo.grid.store.app.testdata.ItemTestDataProvider.getTestItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

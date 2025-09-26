@@ -1,4 +1,4 @@
-package margo.grid.store.app.testdataa;
+package margo.grid.store.app.testdata;
 
 import margo.grid.store.app.dto.ItemResponseDto;
 import margo.grid.store.app.entity.Item;

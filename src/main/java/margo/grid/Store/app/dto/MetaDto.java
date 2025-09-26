@@ -6,29 +6,31 @@ import org.springframework.data.domain.Page;
 
 @Getter
 public class MetaDto {
-    private final int page;
+    private int page = 0;
 
     @JsonProperty("total_count")
-    private final long totalCount;
+    private long totalCount = 0;
 
     @JsonProperty("page_size")
-    private final int pageSize;
+    private int pageSize = 0;
 
     @JsonProperty("total_pages")
-    private final int totalPages;
+    private int totalPages = 0;
 
     @JsonProperty("has_next")
-    private final boolean hasNext;
+    private boolean hasNext = false;
 
     @JsonProperty("has_previous")
-    private final boolean hasPrevious;
+    private boolean hasPrevious = false;
 
     public MetaDto(Page<?> page) {
-        this.page = page.getNumber();
-        this.totalCount = page.getTotalElements();
-        this.pageSize = page.getSize();
-        this.totalPages = page.getTotalPages();
-        this.hasNext = page.hasNext();
-        this.hasPrevious = page.hasPrevious();
+        if (page != null) {
+            this.page = page.getNumber();
+            this.totalCount = page.getTotalElements();
+            this.pageSize = page.getSize();
+            this.totalPages = page.getTotalPages();
+            this.hasNext = page.hasNext();
+            this.hasPrevious = page.hasPrevious();
+        }
     }
 }

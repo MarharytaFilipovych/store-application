@@ -36,6 +36,5 @@ class BootStrapTest {
         assertThat(userRepository.count()).isGreaterThan(0);
         assertThat(itemRepository.count()).isGreaterThan(0);
         assertThat(orderRepository.count()).isGreaterThan(0);
-
     }
 }
