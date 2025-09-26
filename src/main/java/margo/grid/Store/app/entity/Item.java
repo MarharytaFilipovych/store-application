@@ -2,10 +2,13 @@ package margo.grid.store.app.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,13 +37,13 @@ public class Item {
     @Column(nullable = false, name = "available_quantity")
     private Integer availableQuantity;
 
-    @LastModifiedDate
+    @UpdateTimestamp
     @Column(name = "updated_at", insertable = false)
-    private LocalDateTime updatedAt;
+    private Timestamp updatedAt;
 
-    @CreatedDate
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 
     @ManyToMany(mappedBy = "items")
     @Builder.Default

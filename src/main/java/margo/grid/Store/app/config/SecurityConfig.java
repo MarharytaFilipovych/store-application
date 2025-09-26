@@ -14,9 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebMvc
 public class SecurityConfig {
 
     @Bean
@@ -26,7 +27,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
                                 .requestMatchers("/store/auth/login", "/store/auth/register",
-                                        "/store/items/**", "/store/auth/forgot-password",
+                                        "/store/items/**", "/items/**", "/store/auth/forgot-password", // <- ADD THIS BACK
                                         "/store/auth/reset-password").permitAll()
                                 .anyRequest().authenticated())
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)

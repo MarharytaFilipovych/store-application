@@ -19,7 +19,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public ResponseEntity<PageResponseDto<ItemResponseDto>> getALlStoreItems(@Valid PaginationRequestDto pagination){
+    public ResponseEntity<PageResponseDto<ItemResponseDto>> getALlStoreItems(@Valid @ModelAttribute PaginationRequestDto pagination){
         Page<ItemResponseDto> items = itemService.getItems(pagination.getLimit(), pagination.getOffset());
         return ResponseEntity.ok().body(PageResponseDto.from(items));
     }
