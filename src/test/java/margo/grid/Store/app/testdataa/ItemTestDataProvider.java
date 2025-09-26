@@ -1,7 +1,12 @@
 package margo.grid.store.app.testdataa;
 
+import lombok.RequiredArgsConstructor;
+import margo.grid.store.app.dto.ItemResponseDto;
 import margo.grid.store.app.dto.ItemToCartRequestDto;
 import margo.grid.store.app.entity.Item;
+import margo.grid.store.app.mapper.ItemMapper;
+import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +29,10 @@ public class ItemTestDataProvider {
         );
     }
 
+    public static List<ItemResponseDto> getItemResponseDtos(List<Item> items){
+        return items.stream().map(ItemTestDataProvider::createItemResponseDto).toList();
+    }
+
     private static Item createItem(String title, String price, int quantity) {
         return Item.builder()
                 .id(UUID.randomUUID())
@@ -31,5 +40,14 @@ public class ItemTestDataProvider {
                 .price(new BigDecimal(price))
                 .availableQuantity(quantity)
                 .build();
+    }
+
+    private static ItemResponseDto createItemResponseDto(Item item) {
+        ItemResponseDto dto = new ItemResponseDto();
+        dto.setId(item.getId());
+        dto.setTitle(item.getTitle());
+        dto.setPrice(item.getPrice());
+        dto.setAvailableQuantity(item.getAvailableQuantity());
+        return dto;
     }
 }

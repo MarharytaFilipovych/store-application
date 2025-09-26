@@ -7,7 +7,6 @@ import margo.grid.store.app.mapper.ItemMapper;
 import margo.grid.store.app.repository.ItemRepository;
 import margo.grid.store.app.service.ItemService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
