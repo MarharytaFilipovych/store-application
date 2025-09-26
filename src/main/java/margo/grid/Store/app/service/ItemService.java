@@ -1,6 +1,6 @@
-package margo.grid.Store.app.service;
+package margo.grid.store.app.service;
 
-import margo.grid.Store.app.dto.ItemResponseDto;
+import margo.grid.store.app.dto.ItemResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.util.UUID;

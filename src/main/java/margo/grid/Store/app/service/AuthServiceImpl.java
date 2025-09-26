@@ -1,21 +1,24 @@
-package margo.grid.Store.app.service;
+package margo.grid.store.app.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.dto.ResetPasswordDto;
-import margo.grid.Store.app.dto.UserDto;
-import margo.grid.Store.app.entity.ResetCode;
-import margo.grid.Store.app.entity.User;
-import margo.grid.Store.app.repository.ResetCodeRepository;
-import margo.grid.Store.app.repository.UserRepository;
+import margo.grid.store.app.dto.ResetPasswordDto;
+import margo.grid.store.app.dto.UserDto;
+import margo.grid.store.app.entity.ResetCode;
+import margo.grid.store.app.entity.User;
+import margo.grid.store.app.exception.UserAlreadyExistsException;
+import margo.grid.store.app.repository.ResetCodeRepository;
+import margo.grid.store.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,6 +37,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void register(UserDto dto) {
+        if(userRepository.existsByEmail(dto.getEmail())){
+            throw new UserAlreadyExistsException(dto.getEmail());
+        }
         User user = User.builder()
                 .email(dto.getEmail())
                 .passwordHash(passwordEncoder.encode(dto.getPassword()))

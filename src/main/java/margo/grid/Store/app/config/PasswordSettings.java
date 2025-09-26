@@ -1,4 +1,4 @@
-package margo.grid.Store.app.config;
+package margo.grid.store.app.config;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

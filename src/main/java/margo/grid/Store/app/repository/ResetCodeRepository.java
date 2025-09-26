@@ -1,6 +1,6 @@
-package margo.grid.Store.app.repository;
+package margo.grid.store.app.repository;
 
-import margo.grid.Store.app.entity.ResetCode;
+import margo.grid.store.app.entity.ResetCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

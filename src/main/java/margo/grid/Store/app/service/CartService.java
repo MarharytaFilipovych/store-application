@@ -1,8 +1,9 @@
-package margo.grid.Store.app.service;
+package margo.grid.store.app.service;
 
-import margo.grid.Store.app.dto.CartDto;
-import margo.grid.Store.app.dto.ItemToCartRequestDto;
-import margo.grid.Store.app.entity.Item;
+
+import margo.grid.store.app.dto.CartDto;
+import margo.grid.store.app.dto.ItemToCartRequestDto;
+import margo.grid.store.app.entity.Item;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,13 +1,12 @@
-package margo.grid.Store.app.controller;
+package margo.grid.store.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.dto.ResetPasswordDto;
-import margo.grid.Store.app.dto.UserDto;
-import margo.grid.Store.app.dto.LoginResponseDto;
-import margo.grid.Store.app.service.AuthService;
+import margo.grid.store.app.dto.ResetPasswordDto;
+import margo.grid.store.app.dto.UserDto;
+import margo.grid.store.app.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,12 +32,12 @@ public class AuthController {
         return ResponseEntity.ok().body(authService.login(dto, request));
     }
 
-    @PostMapping
+    @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@Email String email){
         return ResponseEntity.ok().body(authService.getResetCode(email));
     }
 
-    @PostMapping
+    @PostMapping("reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordDto dto){
         authService.resetPassword(dto);
         return ResponseEntity.ok().build();

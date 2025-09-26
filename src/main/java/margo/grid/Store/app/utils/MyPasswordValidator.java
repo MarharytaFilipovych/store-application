@@ -1,9 +1,9 @@
-package margo.grid.Store.app.utils;
+package margo.grid.store.app.utils;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import margo.grid.Store.app.annotation.ValidPassword;
-import margo.grid.Store.app.config.PasswordSettings;
+import margo.grid.store.app.config.PasswordSettings;
 import org.passay.*;
 import org.passay.dictionary.ArrayWordList;
 import org.passay.dictionary.WordListDictionary;

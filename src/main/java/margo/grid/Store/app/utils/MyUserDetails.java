@@ -1,7 +1,7 @@
-package margo.grid.Store.app.utils;
+package margo.grid.store.app.utils;
 
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.entity.User;
+import margo.grid.store.app.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package margo.grid.Store.app.dto;
+package margo.grid.store.app.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;

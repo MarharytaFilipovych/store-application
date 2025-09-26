@@ -1,4 +1,4 @@
-package margo.grid.Store.app.dto;
+package margo.grid.store.app.dto;
 
 import lombok.Data;
 import margo.grid.Store.app.entity.OrderStatus;

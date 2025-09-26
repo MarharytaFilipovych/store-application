@@ -16,3 +16,14 @@ server:
     context-path: "/store"
 reset-code:
   expiration-time: PT7M
+
+
+app:
+  rate-limit:
+    enabled: true
+    max-requests: 5
+    refill-period: PT20M
+    cleanup-interval: PT30M
+    excluded-paths:
+      - "/register"
+      - "/forgot-password"

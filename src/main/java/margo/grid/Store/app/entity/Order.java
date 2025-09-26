@@ -1,4 +1,4 @@
-package margo.grid.Store.app.entity;
+package margo.grid.store.app.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,7 +27,7 @@ public class Order {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    private margo.grid.Store.app.entity.OrderStatus status;
 
     @LastModifiedDate
     @Column(name = "updated_at", insertable = false)

@@ -1,9 +1,8 @@
-package margo.grid.Store.app.repository;
+package margo.grid.store.app.repository;
 
-import margo.grid.Store.app.entity.Item;
+import margo.grid.store.app.entity.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.UUID;
 
 @Repository

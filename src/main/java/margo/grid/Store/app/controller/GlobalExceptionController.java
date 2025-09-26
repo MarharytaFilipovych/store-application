@@ -1,9 +1,10 @@
-package margo.grid.Store.app.controller;
+package margo.grid.store.app.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import margo.grid.Store.app.dto.ErrorResponseDto;
+import margo.grid.store.app.dto.ErrorResponseDto;
+import margo.grid.store.app.exception.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -64,5 +65,10 @@ public class GlobalExceptionController {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(){
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponseDto("Access denied!"));
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDto> handleUserAlreadyExistsException(UserAlreadyExistsException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(e.getMessage()));
     }
 }

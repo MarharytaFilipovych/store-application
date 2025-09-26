@@ -1,10 +1,10 @@
-package margo.grid.Store.app.controller;
+package margo.grid.store.app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.dto.CartDto;
-import margo.grid.Store.app.dto.ItemToCartRequestDto;
-import margo.grid.Store.app.service.CartService;
+import margo.grid.store.app.dto.CartDto;
+import margo.grid.store.app.dto.ItemToCartRequestDto;
+import margo.grid.store.app.service.CartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;

@@ -1,12 +1,12 @@
-package margo.grid.Store.app.controller;
+package margo.grid.store.app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.dto.OrderResponseDto;
-import margo.grid.Store.app.dto.PageResponseDto;
-import margo.grid.Store.app.dto.PaginationRequestDto;
-import margo.grid.Store.app.service.OrderService;
-import margo.grid.Store.app.utils.MyUserDetails;
+import margo.grid.store.app.dto.OrderResponseDto;
+import margo.grid.store.app.dto.PageResponseDto;
+import margo.grid.store.app.dto.PaginationRequestDto;
+import margo.grid.store.app.service.OrderService;
+import margo.grid.store.app.utils.MyUserDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

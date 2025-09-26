@@ -1,11 +1,12 @@
-package margo.grid.Store.app.service;
+package margo.grid.store.app.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import margo.grid.Store.app.dto.CartItemResponseDto;
-import margo.grid.Store.app.dto.CartDto;
-import margo.grid.Store.app.dto.ItemToCartRequestDto;
-import margo.grid.Store.app.entity.Item;
-import margo.grid.Store.app.repository.ItemRepository;
+
+import margo.grid.store.app.dto.CartDto;
+import margo.grid.store.app.dto.CartItemResponseDto;
+import margo.grid.store.app.dto.ItemToCartRequestDto;
+import margo.grid.store.app.entity.Item;
+import margo.grid.store.app.repository.ItemRepository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ public class CartServiceImpl implements CartService {
                         throw new IllegalArgumentException("The requested quantity exceeded available quantity!");
                     }
                     cartItems.put(dto.getItemId(), dto.getQuantity());
+                    foundItem.setAvailableQuantity(foundItem.getAvailableQuantity() - dto.getQuantity());
+                    itemRepository.save(foundItem);
                 },
                 () -> {
                     throw new EntityNotFoundException("Item with id: " + dto.getItemId() + " was not found");
@@ -43,23 +46,18 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void modifyItem(ItemToCartRequestDto dto) {
-        itemRepository.findById(dto.getItemId()).ifPresentOrElse(
-                foundItem -> {
-                    int currentQuantity = cartItems.getOrDefault(dto.getItemId(), 0);
-                    if (foundItem.getAvailableQuantity() < currentQuantity + dto.getQuantity()) {
-                        throw new IllegalStateException("The requested quantity exceeded available quantity!");
-                    }
-                    cartItems.merge(dto.getItemId(), dto.getQuantity(), Integer::sum);
-                },
-                () -> {
-                    throw new EntityNotFoundException("Item with id: " + dto.getItemId() + " was not found");
-                }
-        );
+        if(cartItems.get(dto.getItemId()) == null){
+            throw new EntityNotFoundException("There is no item in the cart with id: " + dto.getItemId());
+        }
+        addItem(dto);
     }
 
     @Override
     public void removeItem(UUID id) {
-        cartItems.remove(id);
+        itemRepository.findById(id).ifPresentOrElse(item ->
+            item.setAvailableQuantity(item.getAvailableQuantity() + cartItems.remove(id)),
+                () -> {throw new EntityNotFoundException("There is no item in the cart with id: " + id);}
+        );
     }
 
     @Override
@@ -72,6 +70,7 @@ public class CartServiceImpl implements CartService {
                 .build();
     }
 
+    @Override
     public List<Item> getAllItemsInCart(){
         return itemRepository.findAllById(cartItems.keySet());
     }

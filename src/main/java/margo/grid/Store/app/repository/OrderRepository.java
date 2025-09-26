@@ -1,7 +1,7 @@
-package margo.grid.Store.app.repository;
+package margo.grid.store.app.repository;
 
-import margo.grid.Store.app.entity.Order;
-import margo.grid.Store.app.entity.OrderStatus;
+import margo.grid.store.app.entity.Order;
+import margo.grid.store.app.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

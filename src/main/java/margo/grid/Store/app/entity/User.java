@@ -1,4 +1,4 @@
-package margo.grid.Store.app.entity;
+package margo.grid.store.app.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

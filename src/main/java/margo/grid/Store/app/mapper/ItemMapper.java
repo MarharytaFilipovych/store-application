@@ -1,4 +1,4 @@
-package margo.grid.Store.app.mapper;
+package margo.grid.store.app.mapper;
 
 import margo.grid.Store.app.dto.ItemResponseDto;
 import margo.grid.Store.app.entity.Item;

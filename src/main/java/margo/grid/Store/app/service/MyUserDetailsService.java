@@ -1,8 +1,8 @@
-package margo.grid.Store.app.service;
+package margo.grid.store.app.service;
 
 import lombok.RequiredArgsConstructor;
-import margo.grid.Store.app.repository.UserRepository;
 import margo.grid.Store.app.utils.MyUserDetails;
+import margo.grid.store.app.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
