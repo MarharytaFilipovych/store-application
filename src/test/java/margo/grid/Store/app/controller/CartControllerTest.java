@@ -1,6 +1,6 @@
 package margo.grid.store.app.controller;
 
-import margo.grid.store.app.service.OrderService;
+import margo.grid.store.app.service.CartService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,34 +11,33 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-@AutoConfigureMockMvc
 @SpringBootTest
-class OrderControllerTest {
+@AutoConfigureMockMvc
+class CartControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private OrderService orderService;
+    private CartService cartService;
 
     @BeforeEach
     void setUp() {
     }
 
     @Test
-    void createOrder() {
+    void addItemToCart() {
     }
 
     @Test
-    void getOrder() {
+    void modifyItemInCart() {
     }
 
     @Test
-    void cancelOrder() {
+    void deleteItemFromCart() {
     }
 
     @Test
-    void getAllUserOrders() {
+    void getAllItemsInCart() {
     }
 }

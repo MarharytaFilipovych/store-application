@@ -28,6 +28,10 @@ public class ItemTestDataProvider {
         return items.stream().map(ItemTestDataProvider::createItemResponseDto).toList();
     }
 
+    public static List<ItemResponseDto> getItemResponseDtos(){
+        return getTestItems().stream().map(ItemTestDataProvider::createItemResponseDto).toList();
+    }
+
     private static Item createItem(String title, String price, int quantity) {
         return Item.builder()
                 .id(UUID.randomUUID())

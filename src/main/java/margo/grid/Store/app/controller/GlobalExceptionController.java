@@ -43,8 +43,8 @@ public class GlobalExceptionController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handleGlobalException(){
-        return ResponseEntity.internalServerError().body(new ErrorResponseDto("OHHHHHH NOOOOO"));
+    public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception e){
+        return ResponseEntity.internalServerError().body(new ErrorResponseDto("OHHHHHH NOOOOO: " + e.getMessage()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
