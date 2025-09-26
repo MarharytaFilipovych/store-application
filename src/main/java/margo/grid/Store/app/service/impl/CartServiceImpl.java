@@ -47,18 +47,36 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void modifyItem(ItemToCartRequestDto dto) {
-        if(cartItems.get(dto.getItemId()) == null){
+        Integer currentCartQuantity = cartItems.get(dto.getItemId());
+        if(currentCartQuantity == null){
             throw new EntityNotFoundException("There is no item in the cart with id: " + dto.getItemId());
         }
-        addItem(dto);
+
+        itemRepository.findById(dto.getItemId()).ifPresentOrElse(
+                foundItem -> {
+                    int quantityDifference = dto.getQuantity() - currentCartQuantity;
+                    if (quantityDifference > 0 && foundItem.getAvailableQuantity() < quantityDifference) {
+                        throw new IllegalArgumentException("The requested quantity exceeded available quantity!");
+                    }
+                    cartItems.put(dto.getItemId(), dto.getQuantity());
+                    foundItem.setAvailableQuantity(foundItem.getAvailableQuantity() - quantityDifference);
+                    itemRepository.save(foundItem);
+                },
+                () -> {throw new EntityNotFoundException("Item with id: " + dto.getItemId() + " was not found");}
+        );
     }
 
     @Override
     public void removeItem(UUID id) {
-        itemRepository.findById(id).ifPresentOrElse(item ->
-            item.setAvailableQuantity(item.getAvailableQuantity() + cartItems.remove(id)),
-                () -> {throw new EntityNotFoundException("There is no item in the cart with id: " + id);}
-        );
+        itemRepository.findById(id).ifPresentOrElse(item -> {
+                    Integer removedQuantity = cartItems.remove(id);
+                    if (removedQuantity == null) {
+                        throw new EntityNotFoundException("There is no item in the cart with id: " + id);
+                    }
+                    item.setAvailableQuantity(item.getAvailableQuantity() + removedQuantity);
+                    itemRepository.save(item);
+                },
+                () -> {throw new EntityNotFoundException("There is no item in the store with id: " + id);});
     }
 
     @Override
