@@ -1,10 +1,11 @@
-package margo.grid.store.app.service;
+package margo.grid.store.app.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import margo.grid.store.app.dto.ItemResponseDto;
 import margo.grid.store.app.mapper.ItemMapper;
 import margo.grid.store.app.repository.ItemRepository;
+import margo.grid.store.app.service.ItemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

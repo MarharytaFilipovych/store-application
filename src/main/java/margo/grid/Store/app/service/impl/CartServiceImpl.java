@@ -1,4 +1,4 @@
-package margo.grid.store.app.service;
+package margo.grid.store.app.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -7,6 +7,7 @@ import margo.grid.store.app.dto.CartItemResponseDto;
 import margo.grid.store.app.dto.ItemToCartRequestDto;
 import margo.grid.store.app.entity.Item;
 import margo.grid.store.app.repository.ItemRepository;
+import margo.grid.store.app.service.CartService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;

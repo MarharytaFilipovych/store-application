@@ -1,4 +1,4 @@
-package margo.grid.store.app.service;
+package margo.grid.store.app.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import margo.grid.store.app.utils.MyUserDetails;

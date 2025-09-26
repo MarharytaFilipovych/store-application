@@ -3,7 +3,6 @@ package margo.grid.store.app.annotation;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import margo.grid.store.app.utils.MyPasswordValidator;
-
 import java.lang.annotation.*;
 
 @Documented

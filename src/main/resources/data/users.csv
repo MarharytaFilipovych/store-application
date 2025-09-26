@@ -1,0 +1,6 @@
+email,passwordHash
+john.doe@example.com,$2a$10$N9qo8uLOickgx2ZMRZoMye7VpkVfPxOWYC/JwQPO.DRk2CqyG1x4O
+jane.smith@example.com,$2a$10$N9qo8uLOickgx2ZMRZoMye7VpkVfPxOWYC/JwQPO.DRk2CqyG1x4O
+mike.johnson@example.com,$2a$10$N9qo8uLOickgx2ZMRZoMye7VpkVfPxOWYC/JwQPO.DRk2CqyG1x4O
+sarah.wilson@example.com,$2a$10$N9qo8uLOickgx2ZMRZoMye7VpkVfPxOWYC/JwQPO.DRk2CqyG1x4O
+david.brown@example.com,$2a$10$N9qo8uLOickgx2ZMRZoMye7VpkVfPxOWYC/JwQPO.DRk2CqyG1x4O

@@ -1,4 +1,4 @@
-package margo.grid.store.app.service;
+package margo.grid.store.app.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,15 +10,14 @@ import margo.grid.store.app.entity.User;
 import margo.grid.store.app.exception.UserAlreadyExistsException;
 import margo.grid.store.app.repository.ResetCodeRepository;
 import margo.grid.store.app.repository.UserRepository;
+import margo.grid.store.app.service.AuthService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
