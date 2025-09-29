@@ -3,6 +3,7 @@ package margo.grid.store.app.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import margo.grid.store.app.annotation.ValidPassword;
 import java.util.UUID;
@@ -13,7 +14,7 @@ public class ResetPasswordDto {
     @NotBlank
     private String email;
 
-    @NotBlank
+    @NotNull
     @JsonProperty("reset_code")
     private UUID resetCode;
 

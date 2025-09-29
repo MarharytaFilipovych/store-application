@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.*;
+
+import static margo.grid.store.app.testdata.CartTestDataProvider.createItemToCartRequest;
 import static margo.grid.store.app.testdata.ItemTestDataProvider.getTestItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,10 +40,7 @@ class CartServiceImplTest {
         items = getTestItems();
         item = items.getFirst();
         itemId = item.getId();
-        cartRequest = ItemToCartRequestDto.builder()
-                .quantity(1)
-                .itemId(itemId)
-                .build();
+        cartRequest =  createItemToCartRequest(itemId, 1);
     }
 
 
