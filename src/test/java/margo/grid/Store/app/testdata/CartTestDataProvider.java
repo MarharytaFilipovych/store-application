@@ -86,22 +86,4 @@ public class CartTestDataProvider {
                 .totalQuantity(0)
                 .build();
     }
-
-    public static CartDto createCartWithSingleItem(Item item, Integer quantity) {
-        List<CartItemResponseDto> items = List.of(createCartItemResponseDto(item, quantity, 1));
-        return createCartDto(items);
-    }
-
-    public static CartDto createCartWithMultipleItems(List<Item> items, List<Integer> quantities) {
-        if (items.size() != quantities.size()) {
-            throw new IllegalArgumentException("Items and quantities lists must have the same size");
-        }
-        
-        List<CartItemResponseDto> cartItems = new ArrayList<>();
-        for (int i = 0; i < items.size(); i++) {
-            cartItems.add(createCartItemResponseDto(items.get(i), quantities.get(i), i + 1));
-        }
-        
-        return createCartDto(cartItems);
-    }
 }

@@ -26,10 +26,6 @@ public class OrderTestDataProvider {
         return orders;
     }
 
-    public static List<Order> getTestOrders(User user) {
-        return getTestOrders(user, ItemTestDataProvider.getTestItems());
-    }
-
     public static List<OrderResponseDto> getOrderResponseDtos() {
         List<OrderResponseDto> orders = new ArrayList<>();
         
@@ -89,9 +85,5 @@ public class OrderTestDataProvider {
                 .user(user)
                 .items(new HashSet<>(items))
                 .build();
-    }
-
-    public static Order createOrder(User user) {
-        return createOrder(user, ItemTestDataProvider.getTestItems().subList(0, 3));
     }
 }
