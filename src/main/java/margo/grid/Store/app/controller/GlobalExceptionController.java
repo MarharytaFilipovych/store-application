@@ -53,7 +53,7 @@ public class GlobalExceptionController {
     }
 
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
-    public ResponseEntity<ErrorResponseDto> handleErrorResponses(IllegalArgumentException e) {
+    public ResponseEntity<ErrorResponseDto> handleErrorResponses(Exception e) {
         return ResponseEntity.badRequest().body(new ErrorResponseDto(e.getMessage()));
     }
 
