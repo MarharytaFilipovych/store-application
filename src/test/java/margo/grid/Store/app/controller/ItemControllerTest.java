@@ -19,19 +19,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
-
+import static margo.grid.store.app.config.PathConstants.ITEMS_PATH;
 import static margo.grid.store.app.testdata.ItemTestDataProvider.getItemResponseDtos;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -171,19 +169,19 @@ class ItemControllerTest {
     }
 
     private ResultActions performGetAllItemsRequest() throws Exception {
-        return mockMvc.perform(get("/items")
+        return mockMvc.perform(get(ITEMS_PATH)
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performGetAllItemsRequest(int size, int page) throws Exception {
-        return mockMvc.perform(get("/items")
+        return mockMvc.perform(get(ITEMS_PATH)
                 .param("size", String.valueOf(size))
                 .param("page", String.valueOf(page))
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performGetItemByIdRequest(UUID itemId) throws Exception {
-        return mockMvc.perform(get("/items/{id}", itemId)
+        return mockMvc.perform(get(ITEMS_PATH + "/{id}", itemId)
                 .accept(MediaType.APPLICATION_JSON));
     }
 

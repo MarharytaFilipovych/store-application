@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import static margo.grid.store.app.config.PathConstants.ORDERS_PATH;
 import static margo.grid.store.app.testdata.OrderTestDataProvider.createOrderResponseDto;
 import static margo.grid.store.app.testdata.OrderTestDataProvider.getOrderResponseDtos;
 import static org.hamcrest.Matchers.containsString;
@@ -35,7 +36,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -257,46 +257,46 @@ class OrderControllerTest {
     }
 
     private ResultActions performAuthenticatedPostRequest() throws Exception {
-        return mockMvc.perform(post("/orders")
+        return mockMvc.perform(post(ORDERS_PATH)
                 .with(user(userDetails))
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performUnauthenticatedPostRequest() throws Exception {
-        return mockMvc.perform(post("/orders")
+        return mockMvc.perform(post(ORDERS_PATH)
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performAuthenticatedGetByIdRequest(UUID id) throws Exception {
-        return mockMvc.perform(get("/orders/{id}", id)
+        return mockMvc.perform(get(ORDERS_PATH  + "/{id}", id)
                 .with(user(userDetails))
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performUnauthenticatedGetByIdRequest(UUID id) throws Exception {
-        return mockMvc.perform(get("/orders/{id}", id)
+        return mockMvc.perform(get(ORDERS_PATH  + "/{id}", id)
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performAuthenticatedPatchRequest(UUID id) throws Exception {
-        return mockMvc.perform(patch("/orders/{id}", id)
+        return mockMvc.perform(patch(ORDERS_PATH  + "/{id}", id)
                 .with(user(userDetails))
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performUnauthenticatedPatchRequest(UUID id) throws Exception {
-        return mockMvc.perform(patch("/orders/{id}", id)
+        return mockMvc.perform(patch(ORDERS_PATH  + "/{id}", id)
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performAuthenticatedGetAllRequest() throws Exception {
-        return mockMvc.perform(get("/orders")
+        return mockMvc.perform(get(ORDERS_PATH)
                 .with(user(userDetails))
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performAuthenticatedGetAllRequest(int size, int page) throws Exception {
-        return mockMvc.perform(get("/orders")
+        return mockMvc.perform(get(ORDERS_PATH)
                 .with(user(userDetails))
                 .param("size", String.valueOf(size))
                 .param("page", String.valueOf(page))
@@ -304,7 +304,7 @@ class OrderControllerTest {
     }
 
     private ResultActions performUnauthenticatedGetAllRequest() throws Exception {
-        return mockMvc.perform(get("/orders")
+        return mockMvc.perform(get(ORDERS_PATH)
                 .accept(MediaType.APPLICATION_JSON));
     }
 

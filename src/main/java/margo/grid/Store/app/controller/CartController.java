@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
+import static margo.grid.store.app.config.PathConstants.CART_ITEMS_PATH;
+
 @RestController
-@RequestMapping("/cart-items")
+@RequestMapping(CART_ITEMS_PATH)
 @RequiredArgsConstructor
 public class CartController {
     private final CartService cartService;

@@ -11,9 +11,9 @@ spring:
     properties.hibernate.dialect: org.hibernate.dialect.MySQLDialect
     hibernate.ddl-auto:
      update
-#server:
-#  servlet:
-#    context-path: "/store"
+server:
+  servlet:
+    context-path: "/store"
 reset-code:
   expiration-time: PT7M
 

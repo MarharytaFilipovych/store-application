@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import java.util.UUID;
 import java.util.stream.Stream;
+import static margo.grid.store.app.config.PathConstants.CART_ITEMS_PATH;
+import static margo.grid.store.app.config.PathConstants.FULL_CART_ITEMS_PATH;
 import static margo.grid.store.app.testdata.CartTestDataProvider.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -269,62 +271,62 @@ class CartControllerTest {
     }
 
     private ResultActions performPostRequest(Object requestBody) throws Exception {
-        return mockMvc.perform(post("/cart-items")
+        return mockMvc.perform(post(CART_ITEMS_PATH)
                 .with(user(userDetails))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performPutRequest(Object requestBody) throws Exception {
-        return mockMvc.perform(put("/cart-items")
+        return mockMvc.perform(put(CART_ITEMS_PATH)
                 .with(user(userDetails))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performDeleteRequest(UUID id) throws Exception {
-        return mockMvc.perform(delete("/cart-items/{id}", id.toString())
+        return mockMvc.perform(delete(CART_ITEMS_PATH + "/{id}", id.toString())
                 .with(user(userDetails)));
     }
 
     private ResultActions performGetRequest() throws Exception {
-        return mockMvc.perform(get("/cart-items")
+        return mockMvc.perform(get(CART_ITEMS_PATH)
                 .with(user(userDetails))
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performPostRequestWithRawJson(String json) throws Exception {
-        return mockMvc.perform(post("/cart-items")
+        return mockMvc.perform(post(CART_ITEMS_PATH)
                 .with(user(userDetails))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
     }
 
     private ResultActions performPutRequestWithRawJson(String json) throws Exception {
-        return mockMvc.perform(put("/cart-items")
+        return mockMvc.perform(put(CART_ITEMS_PATH)
                 .with(user(userDetails))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
     }
 
     private ResultActions performUnauthenticatedPostRequest(ItemToCartRequestDto requestBody) throws Exception {
-        return mockMvc.perform(post("/cart-items")
+        return mockMvc.perform(post(FULL_CART_ITEMS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performUnauthenticatedPutRequest(ItemToCartRequestDto requestBody) throws Exception {
-        return mockMvc.perform(put("/cart-items")
+        return mockMvc.perform(put(FULL_CART_ITEMS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performUnauthenticatedDeleteRequest(UUID id) throws Exception {
-        return mockMvc.perform(delete("/cart-items/{id}", id));
+        return mockMvc.perform(delete(FULL_CART_ITEMS_PATH + "/{id}", id));
     }
 
     private ResultActions performUnauthenticatedGetRequest() throws Exception {
-        return mockMvc.perform(get("/cart-items")
+        return mockMvc.perform(get(FULL_CART_ITEMS_PATH)
                 .accept(MediaType.APPLICATION_JSON));
     }
 

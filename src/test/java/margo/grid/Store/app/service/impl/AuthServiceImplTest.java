@@ -3,6 +3,8 @@ package margo.grid.store.app.service.impl;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import margo.grid.store.app.dto.LoginResponseDto;
+import margo.grid.store.app.dto.ResetCodeResponseDto;
 import margo.grid.store.app.dto.ResetPasswordDto;
 import margo.grid.store.app.dto.UserDto;
 import margo.grid.store.app.entity.ResetCode;
@@ -116,10 +118,10 @@ class AuthServiceImplTest {
         when(httpSession.getId()).thenReturn(sessionId);
 
         // Act
-        String result = authService.login(userDto, httpServletRequest);
+        LoginResponseDto result = authService.login(userDto, httpServletRequest);
 
         // Assert
-        assertEquals(sessionId, result);
+        assertEquals(sessionId, result.getSessionId());
         verify(authenticationManager).authenticate(authTokenCaptor.capture());
 
         UsernamePasswordAuthenticationToken capturedToken = authTokenCaptor.getValue();
@@ -154,10 +156,10 @@ class AuthServiceImplTest {
         });
 
         // Act
-        String result = authService.getResetCode(userDto.getEmail());
+        ResetCodeResponseDto result = authService.getResetCode(userDto.getEmail());
 
         // Assert
-        assertEquals(resetCode.toString(), result);
+        assertEquals(resetCode, result.getResetCode());
         verify(userRepository).findByEmail(userDto.getEmail());
         verify(resetCodeRepository).save(resetCodeArgumentCaptor.capture());
 

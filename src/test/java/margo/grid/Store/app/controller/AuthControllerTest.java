@@ -3,16 +3,12 @@ package margo.grid.store.app.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import margo.grid.store.app.dto.ForgotPasswordDto;
-import margo.grid.store.app.dto.ResetPasswordDto;
-import margo.grid.store.app.dto.UserDto;
+import margo.grid.store.app.dto.*;
 import margo.grid.store.app.exception.UserAlreadyExistsException;
 import margo.grid.store.app.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -24,14 +20,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import java.util.UUID;
-import java.util.stream.Stream;
+import static margo.grid.store.app.config.PathConstants.*;
 import static margo.grid.store.app.testdata.AuthTestDataProvider.createResetPasswordDto;
 import static margo.grid.store.app.testdata.AuthTestDataProvider.createUserDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -58,16 +53,16 @@ class AuthControllerTest {
 
     private UserDto userDto;
     private ResetPasswordDto resetPasswordDto;
-    private String sessionId;
-    private String resetCode;
+    private LoginResponseDto loginResponseDto;
+    private ResetCodeResponseDto resetCodeResponseDto;
     private ForgotPasswordDto forgotPasswordDto;
 
     @BeforeEach
     void setUp() {
-        resetCode = UUID.randomUUID().toString();
+        resetCodeResponseDto = new ResetCodeResponseDto(UUID.randomUUID());
         userDto = createUserDto();
-        resetPasswordDto = createResetPasswordDto(UUID.fromString(resetCode));
-        sessionId = UUID.randomUUID().toString();
+        resetPasswordDto = createResetPasswordDto(resetCodeResponseDto.getResetCode());
+        loginResponseDto = new LoginResponseDto(UUID.randomUUID().toString());
         forgotPasswordDto = new ForgotPasswordDto(userDto.getEmail());
     }
 
@@ -131,12 +126,12 @@ class AuthControllerTest {
     void login_withValidCredentials_shouldReturnSessionId() throws Exception {
         // Arrange
         when(authService.login(any(UserDto.class), any(HttpServletRequest.class)))
-                .thenReturn(sessionId);
+                .thenReturn(loginResponseDto);
 
         // Act & Assert
         performLoginRequest(userDto)
                 .andExpect(status().isOk())
-                .andExpect(content().string(sessionId));
+                .andExpect(jsonPath("$.session_id").value(loginResponseDto.getSessionId()));
 
         verifyLoginCaptureAndAssert();
     }
@@ -181,12 +176,12 @@ class AuthControllerTest {
     @Test
     void forgotPassword_withValidEmail_shouldReturnResetCode() throws Exception {
         // Arrange
-        when(authService.getResetCode(userDto.getEmail())).thenReturn(resetCode);
+        when(authService.getResetCode(userDto.getEmail())).thenReturn(resetCodeResponseDto);
 
         // Act & Assert
         performForgotPasswordRequest(forgotPasswordDto)
                 .andExpect(status().isOk())
-                .andExpect(content().string(resetCode));
+                .andExpect(jsonPath("$.reset_code").value(resetCodeResponseDto.getResetCode().toString()));
 
         verifyForgotPasswordCaptureAndAssert();
     }
@@ -283,49 +278,49 @@ class AuthControllerTest {
     }
 
     private ResultActions performRegisterRequest(UserDto requestBody) throws Exception {
-        return mockMvc.perform(post("/auth/register")
+        return mockMvc.perform(post(AUTH_REGISTER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performRegisterRequestWithRawJson(String json) throws Exception {
-        return mockMvc.perform(post("/auth/register")
+        return mockMvc.perform(post(AUTH_REGISTER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
     }
 
     private ResultActions performLoginRequest(UserDto requestBody) throws Exception {
-        return mockMvc.perform(post("/auth/login")
+        return mockMvc.perform(post(AUTH_LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performLoginRequestWithRawJson(String json) throws Exception {
-        return mockMvc.perform(post("/auth/login")
+        return mockMvc.perform(post(AUTH_LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
     }
 
     private ResultActions performForgotPasswordRequest(ForgotPasswordDto requestBody) throws Exception {
-        return mockMvc.perform(post("/auth/forgot-password")
+        return mockMvc.perform(post(AUTH_FORGOT_PASSWORD)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performForgotPasswordRequestWithRawJson(String json) throws Exception {
-        return mockMvc.perform(post("/auth/forgot-password")
+        return mockMvc.perform(post(AUTH_FORGOT_PASSWORD)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
     }
 
     private ResultActions performResetPasswordRequest(ResetPasswordDto requestBody) throws Exception {
-        return mockMvc.perform(post("/auth/reset-password")
+        return mockMvc.perform(post(AUTH_RESET_PASSWORD)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)));
     }
 
     private ResultActions performResetPasswordRequestWithRawJson(String json) throws Exception {
-        return mockMvc.perform(post("/auth/reset-password")
+        return mockMvc.perform(post(AUTH_RESET_PASSWORD)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
     }

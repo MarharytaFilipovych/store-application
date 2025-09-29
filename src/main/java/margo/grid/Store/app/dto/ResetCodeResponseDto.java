@@ -7,7 +7,8 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-public class LoginResponseDto {
-    @JsonProperty("session_id")
-    private String sessionId;
+public class ResetCodeResponseDto {
+
+    @JsonProperty("reset_code")
+    private UUID resetCode;
 }

@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import static margo.grid.store.app.config.PathConstants.*;
 
 @Configuration
 @EnableWebMvc
@@ -28,15 +28,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers("/auth/login", "/auth/register",
-                                        "/items/**", "/auth/forgot-password",
-                                        "/auth/reset-password").permitAll()
+                                .requestMatchers(FULL_LOGIN_PATH, AUTH_LOGIN, AUTH_REGISTER, FULL_REGISTER_PATH,
+                                        FULL_ITEMS_PATH + "/**", ITEMS_PATH + "/**",
+                                        FULL_FORGOT_PASSWORD_PATH, AUTH_FORGOT_PASSWORD,
+                                        FULL_RESET_PASSWORD_PATH, AUTH_RESET_PASSWORD).permitAll()
                                 .anyRequest().authenticated())
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(httpSecurityLogoutConfigurer ->
-                        httpSecurityLogoutConfigurer.logoutUrl("/auth/logout")
+                        httpSecurityLogoutConfigurer.logoutUrl(FULL_LOGOUT_PATH)
                                 .invalidateHttpSession(true)
                                 .deleteCookies("JSESSIONID")
                                 .clearAuthentication(true)
@@ -44,8 +45,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                )
+                        .maxSessionsPreventsLogin(false))
                 .build();
     }
 

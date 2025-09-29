@@ -15,9 +15,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.UUID;
 
+import static margo.grid.store.app.config.PathConstants.ORDERS_PATH;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/orders")
+@RequestMapping(ORDERS_PATH)
 public class OrderController {
     private final OrderService orderService;
 

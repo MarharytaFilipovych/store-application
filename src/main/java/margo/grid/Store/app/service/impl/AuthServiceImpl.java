@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import margo.grid.store.app.dto.LoginResponseDto;
+import margo.grid.store.app.dto.ResetCodeResponseDto;
 import margo.grid.store.app.dto.ResetPasswordDto;
 import margo.grid.store.app.dto.UserDto;
 import margo.grid.store.app.entity.ResetCode;
@@ -47,22 +49,22 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(UserDto dto, HttpServletRequest request) {
+    public LoginResponseDto login(UserDto dto, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken
                 (dto.getEmail(), dto.getPassword());
         Authentication authentication = authenticationManager.authenticate(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         HttpSession session = request.getSession(true);
-        return session.getId();
+        return new LoginResponseDto(session.getId());
     }
 
     @Override
-    public String getResetCode(String email) {
+    public ResetCodeResponseDto getResetCode(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new EntityNotFoundException("User with email " + email + " does not exist!"));
-        return resetCodeRepository.save
+        return new ResetCodeResponseDto(resetCodeRepository.save
                         (new ResetCode(user, LocalDateTime.now().plus(resetCodeLifeDuration)))
-                .getCode().toString();
+                .getCode());
     }
 
     @Override

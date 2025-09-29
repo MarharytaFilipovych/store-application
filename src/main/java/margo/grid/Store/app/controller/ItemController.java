@@ -12,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
+import static margo.grid.store.app.config.PathConstants.ITEMS_PATH;
+
 @RestController
-@RequestMapping("/items")
+@RequestMapping(ITEMS_PATH)
 @RequiredArgsConstructor
 public class ItemController {
 
