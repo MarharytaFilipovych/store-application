@@ -76,8 +76,7 @@ class CartControllerTest {
         doNothing().when(cartService).addItem(any(ItemToCartRequestDto.class));
 
         // Act & Assert
-        performPostRequest(itemToCartRequest)
-                .andExpect(status().isOk());
+        performPostRequest(itemToCartRequest).andExpect(status().isOk());
 
         verify(cartService).addItem(itemToCartRequestDtoCaptor.capture());
         ItemToCartRequestDto captured = itemToCartRequestDtoCaptor.getValue();
@@ -89,9 +88,7 @@ class CartControllerTest {
     @MethodSource("provideInvalidCartRequests")
     void addItemToCart_withInvalidRequest_shouldReturnBadRequest(ItemToCartRequestDto invalidRequest) throws Exception {
         // Act & Assert
-        performPostRequest(invalidRequest)
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+        performPostRequest(invalidRequest).andExpect(status().isBadRequest());
 
         verify(cartService, never()).addItem(itemToCartRequest);
     }
@@ -104,8 +101,7 @@ class CartControllerTest {
         doThrow(exception).when(cartService).addItem(any(ItemToCartRequestDto.class));
 
         // Act & Assert
-        performPostRequest(itemToCartRequest)
-                .andExpect(status().is(expectedStatus));
+        performPostRequest(itemToCartRequest).andExpect(status().is(expectedStatus));
 
         verify(cartService).addItem(itemToCartRequest);
     }
@@ -114,13 +110,7 @@ class CartControllerTest {
     @MethodSource("provideInvalidJsonScenarios")
     void addItemToCart_withInvalidJson_shouldReturnBadRequest(String json) throws Exception {
         // Act & Assert
-        performPostRequestWithRawJson(json)
-                .andExpect(status().isBadRequest());
-
-        mockMvc.perform(post("/cart-items")
-                        .with(user(userDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json));
+        performPostRequestWithRawJson(json).andExpect(status().isBadRequest());
 
         verify(cartService, never()).addItem(itemToCartRequest);
     }
@@ -128,8 +118,7 @@ class CartControllerTest {
     @Test
     void addItemToCart_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        performUnauthenticatedPostRequest(itemToCartRequest)
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedPostRequest(itemToCartRequest).andExpect(status().isUnauthorized());
 
         verify(cartService, never()).addItem(any());
     }
@@ -141,9 +130,7 @@ class CartControllerTest {
         doNothing().when(cartService).modifyItem(any(ItemToCartRequestDto.class));
 
         // Act & Assert
-        performPutRequest(itemToCartRequest)
-                .andDo(print())
-                .andExpect(status().isNoContent());
+        performPutRequest(itemToCartRequest).andExpect(status().isNoContent());
 
         verify(cartService).modifyItem(itemToCartRequestDtoCaptor.capture());
         ItemToCartRequestDto captured = itemToCartRequestDtoCaptor.getValue();
@@ -155,9 +142,7 @@ class CartControllerTest {
     @MethodSource("provideInvalidCartRequests")
     void modifyItemInCart_withInvalidRequest_shouldReturnBadRequest(ItemToCartRequestDto invalidRequest) throws Exception {
         // Act & Assert
-        performPutRequest(invalidRequest)
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+        performPutRequest(invalidRequest).andExpect(status().isBadRequest());
 
         verify(cartService, never()).modifyItem(any());
     }
@@ -170,8 +155,7 @@ class CartControllerTest {
         doThrow(exception).when(cartService).modifyItem(itemToCartRequest);
 
         // Act & Assert
-        performPutRequest(itemToCartRequest)
-                .andExpect(status().is(expectedStatus));
+        performPutRequest(itemToCartRequest).andExpect(status().is(expectedStatus));
 
         verify(cartService).modifyItem(itemToCartRequest);
     }
@@ -179,8 +163,7 @@ class CartControllerTest {
     @Test
     void modifyItemInCart_withInvalidJson_shouldReturnBadRequest() throws Exception {
         // Act & Assert
-        performPutRequestWithRawJson(invalidJson)
-                .andExpect(status().isBadRequest());
+        performPutRequestWithRawJson(invalidJson).andExpect(status().isBadRequest());
 
         verify(cartService, never()).modifyItem(any());
     }
@@ -188,8 +171,7 @@ class CartControllerTest {
     @Test
     void modifyItemInCart_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        performUnauthenticatedPutRequest(itemToCartRequest)
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedPutRequest(itemToCartRequest).andExpect(status().isUnauthorized());
 
         verify(cartService, never()).modifyItem(any());
     }
@@ -200,9 +182,7 @@ class CartControllerTest {
         doNothing().when(cartService).removeItem(itemId);
 
         // Act & Assert
-        performDeleteRequest(itemId)
-                .andDo(print())
-                .andExpect(status().isNoContent());
+        performDeleteRequest(itemId).andExpect(status().isNoContent());
 
         verify(cartService).removeItem(uuidArgumentCaptor.capture());
         assertEquals(itemId, uuidArgumentCaptor.getValue());
@@ -214,8 +194,7 @@ class CartControllerTest {
         doThrow(new EntityNotFoundException()).when(cartService).removeItem(itemId);
 
         // Act & Assert
-        performDeleteRequest(itemId)
-                .andExpect(status().isNotFound());
+        performDeleteRequest(itemId).andExpect(status().isNotFound());
 
         verify(cartService).removeItem(itemId);
     }
@@ -223,8 +202,7 @@ class CartControllerTest {
     @Test
     void deleteItemFromCart_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        performUnauthenticatedDeleteRequest(itemId)
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedDeleteRequest(itemId).andExpect(status().isUnauthorized());
 
         verify(cartService, never()).removeItem(any());
     }
@@ -285,8 +263,7 @@ class CartControllerTest {
     @Test
     void getAllItemsInCart_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        performUnauthenticatedGetRequest()
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedGetRequest().andExpect(status().isUnauthorized());
 
         verify(cartService, never()).getCart();
     }

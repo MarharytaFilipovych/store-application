@@ -10,6 +10,10 @@ import margo.grid.store.app.exception.UserAlreadyExistsException;
 import margo.grid.store.app.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +22,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import java.util.UUID;
+import java.util.stream.Stream;
 import static margo.grid.store.app.testdata.AuthTestDataProvider.createResetPasswordDto;
 import static margo.grid.store.app.testdata.AuthTestDataProvider.createUserDto;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -54,8 +60,6 @@ class AuthControllerTest {
     private ResetPasswordDto resetPasswordDto;
     private String sessionId;
     private String resetCode;
-    private String incompleteJson;
-    private String invalidJson;
     private ForgotPasswordDto forgotPasswordDto;
 
     @BeforeEach
@@ -64,8 +68,6 @@ class AuthControllerTest {
         userDto = createUserDto();
         resetPasswordDto = createResetPasswordDto(UUID.fromString(resetCode));
         sessionId = UUID.randomUUID().toString();
-        incompleteJson = "{\"email\":\"test@example.com\"}";
-        invalidJson = "jjjj\"";
         forgotPasswordDto = new ForgotPasswordDto(userDto.getEmail());
     }
 
@@ -75,42 +77,31 @@ class AuthControllerTest {
         doNothing().when(authService).register(userDto);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andDo(print())
-                .andExpect(status().isOk());
+        performRegisterRequest(userDto).andExpect(status().isOk());
 
-        verify(authService).register(userDtoArgumentCaptor.capture());
-        UserDto captured = userDtoArgumentCaptor.getValue();
-        assertEquals(userDto.getEmail(), captured.getEmail());
-        assertEquals(userDto.getPassword(), captured.getPassword());
+        verifyRegisterCaptureAndAssert();
     }
 
-    @Test
-    void register_withInvalidEmail_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"kkkk", "invalid", "notanemail", "@missing.com"})
+    void register_withInvalidEmail_shouldReturnBadRequest(String invalidEmail) throws Exception {
         // Arrange
-        userDto.setEmail("kkkk");
+        userDto.setEmail(invalidEmail);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isBadRequest());
+        performRegisterRequest(userDto).andExpect(status().isBadRequest());
 
         verify(authService, never()).register(userDto);
     }
 
-    @Test
-    void register_withInvalidPassword_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"....", "weak", "12345", "short"})
+    void register_withInvalidPassword_shouldReturnBadRequest(String invalidPassword) throws Exception {
         // Arrange
-        userDto.setPassword("....");
+        userDto.setPassword(invalidPassword);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isBadRequest());
+        performRegisterRequest(userDto).andExpect(status().isBadRequest());
 
         verify(authService, never()).register(userDto);
     }
@@ -122,33 +113,16 @@ class AuthControllerTest {
                 .when(authService).register(userDto);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isConflict());
+        performRegisterRequest(userDto).andExpect(status().isConflict());
 
         verify(authService).register(userDto);
     }
 
-    @Test
-    void register_withInvalidJson_shouldReturnBadRequest() throws Exception {
-         // Act & Assert
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJson))
-                .andExpect(status().isBadRequest());
-
-        verify(authService, never()).register(any());
-    }
-
-    @Test
-    void register_withMissingFields_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"jjjj\"", "{\"email\":\"test@example.com\"}", "{}", "", "null"})
+    void register_withInvalidJson_shouldReturnBadRequest(String json) throws Exception {
         // Act & Assert
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(incompleteJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+        performRegisterRequestWithRawJson(json).andExpect(status().isBadRequest());
 
         verify(authService, never()).register(userDto);
     }
@@ -160,59 +134,48 @@ class AuthControllerTest {
                 .thenReturn(sessionId);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andDo(print())
+        performLoginRequest(userDto)
                 .andExpect(status().isOk())
                 .andExpect(content().string(sessionId));
 
-        verify(authService).login(userDtoArgumentCaptor.capture(), any(HttpServletRequest.class));
-        UserDto captured = userDtoArgumentCaptor.getValue();
-        assertEquals(userDto.getEmail(), captured.getEmail());
-        assertEquals(userDto.getPassword(), captured.getPassword());
+        verifyLoginCaptureAndAssert();
     }
 
-    @Test
-    void login_withInvalidEmail_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {",,,", "invalid", "@test", "bad.email"})
+    void login_withInvalidEmail_shouldReturnBadRequest(String invalidEmail) throws Exception {
         // Arrange
-        userDto.setEmail(",,,");
+        userDto.setEmail(invalidEmail);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
+        performLoginRequest(userDto)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
 
         verify(authService, never()).login(eq(userDto), any(HttpServletRequest.class));
     }
 
-    @Test
-    void login_withInvalidPassword_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {",,,", "bad", "xyz"})
+    void login_withInvalidPassword_shouldReturnBadRequest(String invalidPassword) throws Exception {
         // Arrange
-        userDto.setPassword(",,,");
+        userDto.setPassword(invalidPassword);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
+        performLoginRequest(userDto)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
 
         verify(authService, never()).login(eq(userDto), any(HttpServletRequest.class));
     }
 
-    @Test
-    void login_withInvalidJson_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"jjjj\"", "{\"email\":\"test@example.com\"}", "{}", "", "null"})
+    void login_withInvalidJson_shouldReturnBadRequest(String json) throws Exception {
         // Act & Assert
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid JSON format in request body"));
+        performLoginRequestWithRawJson(json).andExpect(status().isBadRequest());
 
-        verify(authService, never()).login(any(UserDto.class), any(HttpServletRequest.class));
+        verify(authService, never()).login(eq(userDto), any(HttpServletRequest.class));
     }
 
     @Test
@@ -221,29 +184,23 @@ class AuthControllerTest {
         when(authService.getResetCode(userDto.getEmail())).thenReturn(resetCode);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/forgot-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(forgotPasswordDto)))
-                .andDo(print())
+        performForgotPasswordRequest(forgotPasswordDto)
                 .andExpect(status().isOk())
                 .andExpect(content().string(resetCode));
 
-        verify(authService).getResetCode(emailArgumentCaptor.capture());
-        assertEquals(userDto.getEmail(), emailArgumentCaptor.getValue());
+        verifyForgotPasswordCaptureAndAssert();
     }
 
-    @Test
-    void forgotPassword_withInvalidEmail_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"..", "invalid", "notanemail"})
+    void forgotPassword_withInvalidEmail_shouldReturnBadRequest(String invalidEmail) throws Exception {
         // Arrange
-        forgotPasswordDto.setEmail("..");
+        forgotPasswordDto.setEmail(invalidEmail);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/forgot-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(forgotPasswordDto)))
-                .andExpect(status().isBadRequest());
+        performForgotPasswordRequest(forgotPasswordDto).andExpect(status().isBadRequest());
 
-        verify(authService, never()).getResetCode(resetCode);
+        verify(authService, never()).getResetCode(userDto.getEmail());
     }
 
     @Test
@@ -253,12 +210,18 @@ class AuthControllerTest {
                 .thenThrow(new EntityNotFoundException("User with email " + userDto.getEmail() + " does not exist!"));
 
         // Act & Assert
-        mockMvc.perform(post("/auth/forgot-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(forgotPasswordDto)))
-                .andExpect(status().isNotFound());
+        performForgotPasswordRequest(forgotPasswordDto).andExpect(status().isNotFound());
 
         verify(authService).getResetCode(userDto.getEmail());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"jjjj\"", "{\"email:\"test@example.com\"}", "{}", "", "null"})
+    void forgotPassword_withInvalidJson_shouldReturnBadRequest(String json) throws Exception {
+        // Act & Assert
+        performForgotPasswordRequestWithRawJson(json).andExpect(status().isBadRequest());
+
+        verify(authService, never()).getResetCode(userDto.getEmail());
     }
 
     @Test
@@ -267,46 +230,35 @@ class AuthControllerTest {
         doNothing().when(authService).resetPassword(resetPasswordDto);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resetPasswordDto)))
-                .andDo(print())
-                .andExpect(status().isOk());
+        performResetPasswordRequest(resetPasswordDto).andExpect(status().isOk());
 
-        verify(authService).resetPassword(resetPasswordDtoArgumentCaptor.capture());
-        ResetPasswordDto captured = resetPasswordDtoArgumentCaptor.getValue();
-        assertEquals(resetPasswordDto.getEmail(), captured.getEmail());
-        assertEquals(resetPasswordDto.getResetCode(), captured.getResetCode());
-        assertEquals(resetPasswordDto.getNewPassword(), captured.getNewPassword());
+        verifyResetPasswordCaptureAndAssert();
     }
 
-    @Test
-    void resetPassword_withInvalidEmail_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"...", "invalid", "notanemail"})
+    void resetPassword_withInvalidEmail_shouldReturnBadRequest(String invalidEmail) throws Exception {
         // Arrange
-        resetPasswordDto.setEmail("...");
+        resetPasswordDto.setEmail(invalidEmail);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resetPasswordDto)))
-                .andExpect(status().isBadRequest());
+        performResetPasswordRequest(resetPasswordDto).andExpect(status().isBadRequest());
 
-        verify(authService, never()).resetPassword(resetPasswordDto);
+        verify(authService, never()).resetPassword(any());
     }
 
-    @Test
-    void resetPassword_withInvalidNewPassword_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"...", "weak", "bad"})
+    void resetPassword_withInvalidNewPassword_shouldReturnBadRequest(String invalidPassword) throws Exception {
         // Arrange
-        resetPasswordDto.setNewPassword("...");
+        resetPasswordDto.setNewPassword(invalidPassword);
 
         // Act & Assert
-        mockMvc.perform(post("/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resetPasswordDto)))
+        performResetPasswordRequest(resetPasswordDto)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
 
-        verify(authService, never()).resetPassword(resetPasswordDto);
+        verify(authService, never()).resetPassword(any());
     }
 
     @Test
@@ -316,33 +268,92 @@ class AuthControllerTest {
                 .when(authService).resetPassword(any(ResetPasswordDto.class));
 
         // Act & Assert
-        mockMvc.perform(post("/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resetPasswordDto)))
-                .andExpect(status().isNotFound());
+        performResetPasswordRequest(resetPasswordDto).andExpect(status().isNotFound());
 
         verify(authService).resetPassword(any());
     }
 
-    @Test
-    void resetPassword_withInvalidJson_shouldReturnBadRequest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"jjjj\"", "{\"email\":\"test@example.com\"}", "{}", "", "null"})
+    void resetPassword_withInvalidJson_shouldReturnBadRequest(String json) throws Exception {
         // Act & Assert
-        mockMvc.perform(post("/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJson))
-                .andExpect(status().isBadRequest());
+        performResetPasswordRequestWithRawJson(json).andExpect(status().isBadRequest());
 
-        verify(authService, never()).resetPassword(resetPasswordDto);
+        verify(authService, never()).resetPassword(any());
     }
 
-    @Test
-    void resetPassword_withMissingFields_shouldReturnBadRequest() throws Exception {
-         // Act & Assert
-        mockMvc.perform(post("/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(incompleteJson))
-                .andExpect(status().isBadRequest());
+    private ResultActions performRegisterRequest(UserDto requestBody) throws Exception {
+        return mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestBody)));
+    }
 
-        verify(authService, never()).resetPassword(resetPasswordDto);
+    private ResultActions performRegisterRequestWithRawJson(String json) throws Exception {
+        return mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
+    }
+
+    private ResultActions performLoginRequest(UserDto requestBody) throws Exception {
+        return mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestBody)));
+    }
+
+    private ResultActions performLoginRequestWithRawJson(String json) throws Exception {
+        return mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
+    }
+
+    private ResultActions performForgotPasswordRequest(ForgotPasswordDto requestBody) throws Exception {
+        return mockMvc.perform(post("/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestBody)));
+    }
+
+    private ResultActions performForgotPasswordRequestWithRawJson(String json) throws Exception {
+        return mockMvc.perform(post("/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
+    }
+
+    private ResultActions performResetPasswordRequest(ResetPasswordDto requestBody) throws Exception {
+        return mockMvc.perform(post("/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestBody)));
+    }
+
+    private ResultActions performResetPasswordRequestWithRawJson(String json) throws Exception {
+        return mockMvc.perform(post("/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
+    }
+
+    private void verifyRegisterCaptureAndAssert() {
+        verify(authService).register(userDtoArgumentCaptor.capture());
+        UserDto captured = userDtoArgumentCaptor.getValue();
+        assertEquals(userDto.getEmail(), captured.getEmail());
+        assertEquals(userDto.getPassword(), captured.getPassword());
+    }
+
+    private void verifyLoginCaptureAndAssert() {
+        verify(authService).login(userDtoArgumentCaptor.capture(), any(HttpServletRequest.class));
+        UserDto captured = userDtoArgumentCaptor.getValue();
+        assertEquals(userDto.getEmail(), captured.getEmail());
+        assertEquals(userDto.getPassword(), captured.getPassword());
+    }
+
+    private void verifyForgotPasswordCaptureAndAssert() {
+        verify(authService).getResetCode(emailArgumentCaptor.capture());
+        assertEquals(userDto.getEmail(), emailArgumentCaptor.getValue());
+    }
+
+    private void verifyResetPasswordCaptureAndAssert() {
+        verify(authService).resetPassword(resetPasswordDtoArgumentCaptor.capture());
+        ResetPasswordDto captured = resetPasswordDtoArgumentCaptor.getValue();
+        assertEquals(resetPasswordDto.getEmail(), captured.getEmail());
+        assertEquals(resetPasswordDto.getResetCode(), captured.getResetCode());
+        assertEquals(resetPasswordDto.getNewPassword(), captured.getNewPassword());
     }
 }

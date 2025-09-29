@@ -7,6 +7,9 @@ import margo.grid.store.app.service.OrderService;
 import margo.grid.store.app.utils.MyUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +21,17 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import static margo.grid.store.app.testdata.OrderTestDataProvider.createOrderResponseDto;
 import static margo.grid.store.app.testdata.OrderTestDataProvider.getOrderResponseDtos;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -76,11 +82,7 @@ class OrderControllerTest {
         when(orderService.createOrder(userDetails)).thenReturn(orderResponseDto);
 
         // Act & Assert
-        mockMvc.perform(post("/orders")
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isCreated())
+        performAuthenticatedPostRequest().andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(header().string("Location", containsString("orders/" + orderResponseDto.getId())))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -88,16 +90,13 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.status").value(OrderStatus.CONFIRMED.toString()))
                 .andExpect(jsonPath("$.total").value(orderResponseDto.getTotal()));
 
-        verify(orderService).createOrder(userDetailsArgumentCaptor.capture());
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
+        verifyCreateOrderCaptureAndAssert();
     }
 
     @Test
     void createOrder_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        mockMvc.perform(post("/orders")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedPostRequest().andExpect(status().isUnauthorized());
 
         verify(orderService, never()).createOrder(userDetails);
     }
@@ -109,9 +108,7 @@ class OrderControllerTest {
         when(orderService.getOrderById(testOrderId, userDetails)).thenReturn(orderResponseDto);
 
         // Act & Assert
-        mockMvc.perform(get("/orders/{id}", testOrderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
+        performAuthenticatedGetByIdRequest(testOrderId)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(testOrderId.toString()))
@@ -119,39 +116,18 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.total").value(orderResponseDto.getTotal()))
                 .andExpect(jsonPath("$.date").exists());
 
-        verify(orderService).getOrderById(uuidArgumentCaptor.capture(), userDetailsArgumentCaptor.capture());
-        assertEquals(testOrderId, uuidArgumentCaptor.getValue());
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
+        verifyGetOrderByIdCaptureAndAssert(testOrderId);
     }
 
-    @Test
-    void getOrder_whenOrderDoesNotExist_shouldReturnNotFound() throws Exception {
+    @ParameterizedTest
+    @MethodSource("provideGetOrderExceptionScenarios")
+    void getOrder_withException_shouldReturnExpectedStatus(
+            Exception exception, int expectedStatus) throws Exception {
         // Arrange
-        when(orderService.getOrderById(orderId, userDetails))
-                .thenThrow(new EntityNotFoundException("Order with id: " + orderId + " was not found!"));
+        when(orderService.getOrderById(orderId, userDetails)).thenThrow(exception);
 
         // Act & Assert
-        mockMvc.perform(get("/orders/{id}", orderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Order with id: " + orderId + " was not found!"));
-
-        verify(orderService).getOrderById(uuidArgumentCaptor.capture(), userDetailsArgumentCaptor.capture());
-        assertEquals(orderId, uuidArgumentCaptor.getValue());
-    }
-
-    @Test
-    void getOrder_whenAccessDenied_shouldReturnForbidden() throws Exception {
-        // Arrange
-        when(orderService.getOrderById(orderId, userDetails))
-                .thenThrow(new AccessDeniedException("You can only view your own orders!"));
-
-        // Act & Assert
-        mockMvc.perform(get("/orders/{id}", orderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+        performAuthenticatedGetByIdRequest(orderId).andExpect(status().is(expectedStatus));
 
         verify(orderService).getOrderById(orderId, userDetails);
     }
@@ -159,11 +135,9 @@ class OrderControllerTest {
     @Test
     void getOrder_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/orders/{id}", orderId)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedGetByIdRequest(orderId).andExpect(status().isUnauthorized());
 
-        verify(orderService, never()).getOrderById(orderId,userDetails);
+        verify(orderService, never()).getOrderById(orderId, userDetails);
     }
 
     @Test
@@ -172,59 +146,20 @@ class OrderControllerTest {
         doNothing().when(orderService).cancelOrder(orderId, userDetails);
 
         // Act & Assert
-        mockMvc.perform(patch("/orders/{id}", orderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+        performAuthenticatedPatchRequest(orderId).andExpect(status().isNoContent());
 
-        verify(orderService).cancelOrder(uuidArgumentCaptor.capture(), userDetailsArgumentCaptor.capture());
-        assertEquals(orderId, uuidArgumentCaptor.getValue());
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
+        verifyCancelOrderCaptureAndAssert();
     }
 
-    @Test
-    void cancelOrder_whenOrderDoesNotExist_shouldReturnNotFound() throws Exception {
+    @ParameterizedTest
+    @MethodSource("provideCancelOrderExceptionScenarios")
+    void cancelOrder_withException_shouldReturnExpectedStatus(
+            Exception exception, int expectedStatus) throws Exception {
         // Arrange
-        doThrow(new EntityNotFoundException("Order with id: " + orderId + " was not found!"))
-                .when(orderService).cancelOrder(orderId, userDetails);
+        doThrow(exception).when(orderService).cancelOrder(orderId, userDetails);
 
         // Act & Assert
-        mockMvc.perform(patch("/orders/{id}", orderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Order with id: " + orderId + " was not found!"));
-
-        verify(orderService).cancelOrder(orderId, userDetails);
-    }
-
-    @Test
-    void cancelOrder_whenAccessDenied_shouldReturnForbidden() throws Exception {
-        // Arrange
-        doThrow(new AccessDeniedException("You can only cancel your own orders!"))
-                .when(orderService).cancelOrder(orderId, userDetails);
-
-        // Act & Assert
-        mockMvc.perform(patch("/orders/{id}", orderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
-
-        verify(orderService).cancelOrder(orderId, userDetails);
-    }
-
-    @Test
-    void cancelOrder_whenAlreadyCancelled_shouldReturnBadRequest() throws Exception {
-        // Arrange
-        doThrow(new IllegalStateException("Order is already cancelled"))
-                .when(orderService).cancelOrder(orderId, userDetails);
-
-        // Act & Assert
-        mockMvc.perform(patch("/orders/{id}", orderId)
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Order is already cancelled"));
+        performAuthenticatedPatchRequest(orderId).andExpect(status().is(expectedStatus));
 
         verify(orderService).cancelOrder(orderId, userDetails);
     }
@@ -232,25 +167,18 @@ class OrderControllerTest {
     @Test
     void cancelOrder_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        mockMvc.perform(patch("/orders/{id}", orderId)
-                        .accept(MediaType.APPLICATION_JSON))
+        performUnauthenticatedPatchRequest(orderId)
                 .andExpect(status().isUnauthorized());
 
         verify(orderService, never()).cancelOrder(orderId, userDetails);
     }
-
     @Test
     void getAllUserOrders_shouldReturnAllUserOrders() throws Exception {
         // Arrange
         configurePageable(orderResponseDtos);
 
         // Act & Assert
-        mockMvc.perform(get("/orders")
-                        .with(user(userDetails))
-                        .param("size", "20")
-                        .param("page", "2")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
+        performAuthenticatedGetAllRequest(20, 2)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -263,7 +191,6 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.content[0].total").value(orderResponseDtos.getFirst().getTotal()));
 
         captureAndCheckPageable(2, 20);
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
     }
 
     @Test
@@ -272,9 +199,7 @@ class OrderControllerTest {
         configurePageable(orderResponseDtos);
 
         // Act & Assert
-        mockMvc.perform(get("/orders")
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
+        performAuthenticatedGetAllRequest()
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -284,20 +209,17 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.content.length()").value(orderResponseDtos.size()));
 
         captureAndCheckPageable(0, 10);
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
     }
 
-    @Test
-    void getAllUserOrders_withInvalidPagination_shouldReplaceWithDefaultPagination() throws Exception {
+    @ParameterizedTest
+    @MethodSource("provideInvalidPaginationScenarios")
+    void getAllUserOrders_withInvalidPagination_shouldReplaceWithDefaultPagination(
+            int page, int size) throws Exception {
         // Arrange
         configurePageable(orderResponseDtos);
 
         // Act & Assert
-        mockMvc.perform(get("/orders")
-                        .with(user(userDetails))
-                        .param("page", "-1")
-                        .param("size", "-5")
-                        .accept(MediaType.APPLICATION_JSON))
+        performAuthenticatedGetAllRequest(size, page)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -307,7 +229,6 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.content.length()").value(orderResponseDtos.size()));
 
         captureAndCheckPageable(0, 10);
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
     }
 
     @Test
@@ -316,9 +237,7 @@ class OrderControllerTest {
         configurePageable(new ArrayList<>());
 
         // Act & Assert
-        mockMvc.perform(get("/orders")
-                        .with(user(userDetails))
-                        .accept(MediaType.APPLICATION_JSON))
+        performAuthenticatedGetAllRequest()
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -327,17 +246,83 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.content").isEmpty());
 
         captureAndCheckPageable(0, 10);
-        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
     }
 
     @Test
     void getAllUserOrders_withoutAuthentication_shouldReturnUnauthorized() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/orders")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+        performUnauthenticatedGetAllRequest().andExpect(status().isUnauthorized());
 
         verify(orderService, never()).getAllUserOrders(any(), any());
+    }
+
+    private ResultActions performAuthenticatedPostRequest() throws Exception {
+        return mockMvc.perform(post("/orders")
+                .with(user(userDetails))
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performUnauthenticatedPostRequest() throws Exception {
+        return mockMvc.perform(post("/orders")
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performAuthenticatedGetByIdRequest(UUID id) throws Exception {
+        return mockMvc.perform(get("/orders/{id}", id)
+                .with(user(userDetails))
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performUnauthenticatedGetByIdRequest(UUID id) throws Exception {
+        return mockMvc.perform(get("/orders/{id}", id)
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performAuthenticatedPatchRequest(UUID id) throws Exception {
+        return mockMvc.perform(patch("/orders/{id}", id)
+                .with(user(userDetails))
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performUnauthenticatedPatchRequest(UUID id) throws Exception {
+        return mockMvc.perform(patch("/orders/{id}", id)
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performAuthenticatedGetAllRequest() throws Exception {
+        return mockMvc.perform(get("/orders")
+                .with(user(userDetails))
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performAuthenticatedGetAllRequest(int size, int page) throws Exception {
+        return mockMvc.perform(get("/orders")
+                .with(user(userDetails))
+                .param("size", String.valueOf(size))
+                .param("page", String.valueOf(page))
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performUnauthenticatedGetAllRequest() throws Exception {
+        return mockMvc.perform(get("/orders")
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private void verifyCreateOrderCaptureAndAssert() {
+        verify(orderService).createOrder(userDetailsArgumentCaptor.capture());
+        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
+    }
+
+    private void verifyGetOrderByIdCaptureAndAssert(UUID expectedOrderId) {
+        verify(orderService).getOrderById(uuidArgumentCaptor.capture(), userDetailsArgumentCaptor.capture());
+        assertEquals(expectedOrderId, uuidArgumentCaptor.getValue());
+        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
+    }
+
+    private void verifyCancelOrderCaptureAndAssert() {
+        verify(orderService).cancelOrder(uuidArgumentCaptor.capture(), userDetailsArgumentCaptor.capture());
+        assertEquals(orderId, uuidArgumentCaptor.getValue());
+        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
     }
 
     private void configurePageable(List<OrderResponseDto> orderResponseDtos) {
@@ -353,5 +338,32 @@ class OrderControllerTest {
         Pageable capturedPageable = pageableArgumentCaptor.getValue();
         assertEquals(pageNumber, capturedPageable.getPageNumber());
         assertEquals(pageSize, capturedPageable.getPageSize());
+        assertEquals(userId, userDetailsArgumentCaptor.getValue().getId());
+    }
+
+    private static Stream<Arguments> provideGetOrderExceptionScenarios() {
+        UUID testOrderId = UUID.randomUUID();
+        return Stream.of(
+                Arguments.of(new EntityNotFoundException("Order with id: " + testOrderId + " was not found!"), 404),
+                Arguments.of(new AccessDeniedException("You can only view your own orders!"), 403)
+        );
+    }
+
+    private static Stream<Arguments> provideCancelOrderExceptionScenarios() {
+        UUID testOrderId = UUID.randomUUID();
+        return Stream.of(
+                Arguments.of(new EntityNotFoundException("Order with id: " + testOrderId + " was not found!"), 404),
+                Arguments.of(new AccessDeniedException("You can only cancel your own orders!"), 403),
+                Arguments.of(new IllegalStateException("Order is already cancelled"), 400)
+        );
+    }
+
+    private static Stream<Arguments> provideInvalidPaginationScenarios() {
+        return Stream.of(
+                Arguments.of(-1, -5),
+                Arguments.of(-10, -1),
+                Arguments.of(0, -3),
+                Arguments.of(-2, 0)
+        );
     }
 }

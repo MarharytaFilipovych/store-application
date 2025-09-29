@@ -5,21 +5,26 @@ import margo.grid.store.app.dto.ItemResponseDto;
 import margo.grid.store.app.service.ItemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
+
 import static margo.grid.store.app.testdata.ItemTestDataProvider.getItemResponseDtos;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,28 +59,26 @@ class ItemControllerTest {
         itemResponseDto = itemResponseDtos.getFirst();
     }
 
-    @Test
-    void getAllStoreItems_shouldReturnAllStoreItems() throws Exception {
+    @ParameterizedTest
+    @MethodSource("providePaginationScenarios")
+    void getAllStoreItems_withCustomPagination_shouldReturnItems(
+            int page, int size) throws Exception {
         // Arrange
         configurePageable(itemResponseDtos);
 
         // Act & Assert
-        mockMvc.perform(get("/items")
-                        .param("size", "20")
-                        .param("page", "3")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
+        performGetAllItemsRequest(size, page)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
-                .andExpect(jsonPath("$.meta.page_size").value(20))
-                .andExpect(jsonPath("$.meta.page").value(3))
+                .andExpect(jsonPath("$.meta.page_size").value(size))
+                .andExpect(jsonPath("$.meta.page").value(page))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content.length()").value(itemResponseDtos.size()))
                 .andExpect(jsonPath("$.content[0].title").value(itemResponseDtos.getFirst().getTitle()))
                 .andExpect(jsonPath("$.content[0].price").value(itemResponseDtos.getFirst().getPrice()));
 
-        captureAndCheckPageable(3, 20);
+        captureAndCheckPageable(page, size);
     }
 
     @Test
@@ -84,8 +87,7 @@ class ItemControllerTest {
         configurePageable(itemResponseDtos);
 
         // Act & Assert
-        mockMvc.perform(get("/items")
-                        .accept(MediaType.APPLICATION_JSON))
+        performGetAllItemsRequest()
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -99,14 +101,15 @@ class ItemControllerTest {
         captureAndCheckPageable(0, 10);
     }
 
-    @Test
-    void getAllStoreItems_withInvalidPagination_shouldRelaceThemWithDefaultPagination() throws Exception {
+    @ParameterizedTest
+    @MethodSource("provideInvalidPaginationScenarios")
+    void getAllStoreItems_withInvalidPagination_shouldReplaceWithDefaultPagination(
+            int page, int size) throws Exception {
+        // Arrange
         configurePageable(itemResponseDtos);
 
-        mockMvc.perform(get("/items")
-                        .param("page", "-1")
-                        .param("size", "-3")
-                        .accept(MediaType.APPLICATION_JSON))
+        // Act & Assert
+        performGetAllItemsRequest(size, page)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -122,10 +125,11 @@ class ItemControllerTest {
 
     @Test
     void getAllStoreItems_whenThereAreNoItems_shouldReturnEmptyPage() throws Exception {
+        // Arrange
         configurePageable(new ArrayList<>());
 
-        mockMvc.perform(get("/items")
-                        .accept(MediaType.APPLICATION_JSON))
+        // Act & Assert
+        performGetAllItemsRequest()
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.meta").exists())
@@ -143,8 +147,7 @@ class ItemControllerTest {
         when(itemService.getItemById(itemId)).thenReturn(itemResponseDto);
 
         // Act & Assert
-        mockMvc.perform(get("/items/{id}", itemId)
-                        .accept(MediaType.APPLICATION_JSON))
+        performGetItemByIdRequest(itemId)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(itemResponseDto.getId().toString()))
@@ -152,8 +155,7 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.price").value(itemResponseDto.getPrice()))
                 .andExpect(jsonPath("$.available_quantity").value(itemResponseDto.getAvailableQuantity()));
 
-        verify(itemService).getItemById(uuidArgumentCaptor.capture());
-        assertEquals(itemId, uuidArgumentCaptor.getValue());
+        verifyGetItemByIdCaptureAndAssert(itemId);
     }
 
     @Test
@@ -163,27 +165,63 @@ class ItemControllerTest {
         when(itemService.getItemById(itemId)).thenThrow(EntityNotFoundException.class);
 
         // Act & Assert
-        mockMvc.perform(get("/items/{id}", itemId)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        performGetItemByIdRequest(itemId).andExpect(status().isNotFound());
 
-        verify(itemService).getItemById(uuidArgumentCaptor.capture());
-        assertEquals(itemId, uuidArgumentCaptor.getValue());
+        verifyGetItemByIdCaptureAndAssert(itemId);
     }
 
-    private void configurePageable(List<ItemResponseDto> itemResponseDtos){
+    private ResultActions performGetAllItemsRequest() throws Exception {
+        return mockMvc.perform(get("/items")
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performGetAllItemsRequest(int size, int page) throws Exception {
+        return mockMvc.perform(get("/items")
+                .param("size", String.valueOf(size))
+                .param("page", String.valueOf(page))
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performGetItemByIdRequest(UUID itemId) throws Exception {
+        return mockMvc.perform(get("/items/{id}", itemId)
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private void verifyGetItemByIdCaptureAndAssert(UUID expectedItemId) {
+        verify(itemService).getItemById(uuidArgumentCaptor.capture());
+        assertEquals(expectedItemId, uuidArgumentCaptor.getValue());
+    }
+
+    private void configurePageable(List<ItemResponseDto> itemResponseDtos) {
         when(itemService.getItems(any(Pageable.class)))
                 .thenAnswer(invocation -> {
                     Pageable pageable = invocation.getArgument(0);
                     return new PageImpl<>(itemResponseDtos, pageable, itemResponseDtos.size());
                 });
-
     }
 
-    private void captureAndCheckPageable(int pageNumber, int pageSize){
+    private void captureAndCheckPageable(int pageNumber, int pageSize) {
         verify(itemService).getItems(pageableArgumentCaptor.capture());
         Pageable capturedPageable = pageableArgumentCaptor.getValue();
         assertEquals(pageNumber, capturedPageable.getPageNumber());
         assertEquals(pageSize, capturedPageable.getPageSize());
+    }
+
+    private static Stream<Arguments> providePaginationScenarios() {
+        return Stream.of(
+                Arguments.of(3, 20),
+                Arguments.of(0, 5),
+                Arguments.of(10, 50),
+                Arguments.of(1, 15)
+        );
+    }
+
+    private static Stream<Arguments> provideInvalidPaginationScenarios() {
+        return Stream.of(
+                Arguments.of(-1, -3),
+                Arguments.of(-10, -5),
+                Arguments.of(0, -1),
+                Arguments.of(-5, 0)
+        );
     }
 }
