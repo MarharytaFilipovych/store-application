@@ -17,14 +17,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MyPasswordValidatorTest {
-    @Mock
-    private PasswordSettings passwordSettings;
-
-    @Mock
-    private ConstraintValidatorContext context;
-
-    @Mock
-    private ConstraintValidatorContext.ConstraintViolationBuilder violationBuilder;
+    @Mock private PasswordSettings passwordSettings;
+    @Mock private ConstraintValidatorContext context;
+    @Mock private ConstraintValidatorContext.ConstraintViolationBuilder violationBuilder;
 
     @InjectMocks
     private MyPasswordValidator validator;

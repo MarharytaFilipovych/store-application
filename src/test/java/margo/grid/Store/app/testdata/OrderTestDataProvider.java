@@ -19,7 +19,7 @@ public class OrderTestDataProvider {
                     .id(UUID.randomUUID())
                     .status(i % 4 == 0 ? OrderStatus.CANCELLED : OrderStatus.CONFIRMED)
                     .user(user)
-                    .items(new HashSet<>(items.subList(0, Math.min(3, items.size()))))
+                    .items(new HashSet<>(items.size()))
                     .build();
             orders.add(order);
         }

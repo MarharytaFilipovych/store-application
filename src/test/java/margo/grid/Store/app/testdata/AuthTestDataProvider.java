@@ -35,6 +35,14 @@ public class AuthTestDataProvider {
                 .build();
     }
 
+    public static User createOtherUser() {
+        return User.builder()
+                .id(UUID.randomUUID())
+                .email("other@example.com")
+                .passwordHash(PASSWORD_HASH)
+                .build();
+    }
+
     public static ResetCode getResetCode(UUID resetCode, User user, Duration resetCodeLifeDuration){
         ResetCode savedResetCode = new ResetCode();
         savedResetCode.setCode(resetCode);
