@@ -2,7 +2,11 @@ package margo.grid.store.app.testdata;
 
 import margo.grid.store.app.dto.ResetPasswordDto;
 import margo.grid.store.app.dto.UserDto;
+import margo.grid.store.app.entity.ResetCode;
 import margo.grid.store.app.entity.User;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class AuthTestDataProvider {
@@ -29,6 +33,14 @@ public class AuthTestDataProvider {
                 .email(VALID_EMAIL)
                 .passwordHash(PASSWORD_HASH)
                 .build();
+    }
+
+    public static ResetCode getResetCode(UUID resetCode, User user, Duration resetCodeLifeDuration){
+        ResetCode savedResetCode = new ResetCode();
+        savedResetCode.setCode(resetCode);
+        savedResetCode.setUser(user);
+        savedResetCode.setExpiresAt(LocalDateTime.now().plus(resetCodeLifeDuration));
+        return savedResetCode;
     }
 
     public final static String VALID_EMAIL = "margosha@gmail.com";

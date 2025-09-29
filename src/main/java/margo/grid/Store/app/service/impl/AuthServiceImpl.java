@@ -2,6 +2,7 @@ package margo.grid.store.app.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import margo.grid.store.app.dto.ResetPasswordDto;
 import margo.grid.store.app.dto.UserDto;
@@ -51,8 +52,8 @@ public class AuthServiceImpl implements AuthService {
                 (dto.getEmail(), dto.getPassword());
         Authentication authentication = authenticationManager.authenticate(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        request.getSession(true);
-        return request.getSession().getId();
+        HttpSession session = request.getSession(true);
+        return session.getId();
     }
 
     @Override
